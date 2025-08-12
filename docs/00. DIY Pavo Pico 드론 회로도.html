@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIY Pavo Pico 드론 회로도</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #333;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            margin: 0;
+            font-size: 2.5em;
+            font-weight: 300;
+        }
+        
+        .header p {
+            margin: 10px 0 0 0;
+            opacity: 0.8;
+            font-size: 1.1em;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .circuit-section {
+            margin-bottom: 50px;
+        }
+        
+        .section-title {
+            color: #2c3e50;
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 3px solid #3498db;
+        }
+        
+        .circuit-board {
+            background: #1a1a1a;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .circuit-board::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(52, 152, 219, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(46, 204, 113, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+        }
+        
+        .component {
+            background: #2c3e50;
+            border: 2px solid #3498db;
+            border-radius: 10px;
+            padding: 15px;
+            margin: 10px;
+            display: inline-block;
+            color: white;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+            transition: all 0.3s ease;
+        }
+        
+        .component:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(52, 152, 219, 0.5);
+        }
+        
+        .component-name {
+            font-weight: bold;
+            font-size: 1.1em;
+            margin-bottom: 5px;
+        }
+        
+        .component-pins {
+            font-size: 0.9em;
+            opacity: 0.8;
+        }
+        
+        .connection-line {
+            stroke: #e74c3c;
+            stroke-width: 3;
+            fill: none;
+            stroke-dasharray: 5,5;
+            animation: dash 1s linear infinite;
+        }
+        
+        @keyframes dash {
+            to {
+                stroke-dashoffset: -10;
+            }
+        }
+        
+        .power-line {
+            stroke: #e67e22;
+            stroke-width: 4;
+            fill: none;
+        }
+        
+        .signal-line {
+            stroke: #27ae60;
+            stroke-width: 2;
+            fill: none;
+        }
+        
+        .pin-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .pin-table th {
+            background: #3498db;
+            color: white;
+            padding: 15px;
+            font-weight: 600;
+        }
+        
+        .pin-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        
+        .pin-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        .pin-table tr:hover {
+            background: #e3f2fd;
+        }
+        
+        .voltage-indicator {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-size: 0.8em;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        
+        .voltage-3v3 {
+            background: #27ae60;
+            color: white;
+        }
+        
+        .voltage-5v {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .voltage-signal {
+            background: #f39c12;
+            color: white;
+        }
+        
+        .warning-box {
+            background: linear-gradient(135deg, #ff7675, #fd79a8);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid #d63031;
+        }
+        
+        .info-box {
+            background: linear-gradient(135deg, #74b9ff, #0984e3);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border-left: 5px solid #2d3436;
+        }
+        
+        .schematic-svg {
+            width: 100%;
+            height: 600px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border: 2px solid #ddd;
+        }
+        
+        .component-rect {
+            fill: #2c3e50;
+            stroke: #3498db;
+            stroke-width: 2;
+            rx: 8;
+        }
+        
+        .component-text {
+            fill: white;
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 12px;
+            text-anchor: middle;
+            font-weight: bold;
+        }
+        
+        .pin-text {
+            fill: #2c3e50;
+            font-family: 'Segoe UI', sans-serif;
+            font-size: 10px;
+            text-anchor: middle;
+        }
+        
+        .wire-power {
+            stroke: #e74c3c;
+            stroke-width: 3;
+            fill: none;
+        }
+        
+        .wire-ground {
+            stroke: #2c3e50;
+            stroke-width: 3;
+            fill: none;
+        }
+        
+        .wire-signal {
+            stroke: #27ae60;
+            stroke-width: 2;
+            fill: none;
+        }
+        
+        .wire-i2c {
+            stroke: #8e44ad;
+            stroke-width: 2;
+            fill: none;
+        }
+        
+        .wire-pwm {
+            stroke: #f39c12;
+            stroke-width: 2;
+            fill: none;
+        }
+        
+        .legend {
+            background: #ecf0f1;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        .legend-item {
+            display: inline-block;
+            margin: 5px 15px;
+            font-size: 0.9em;
+        }
+        
+        .legend-line {
+            display: inline-block;
+            width: 30px;
+            height: 3px;
+            margin-right: 8px;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚁 DIY Pavo Pico 드론 회로도</h1>
+            <p>Arduino Nano ESP32 + MPU9250 + 4-in-1 ESC + Walksnail Avatar HD V2</p>
+        </div>
+        
+        <div class="content">
+            <!-- 메인 회로도 -->
+            <div class="circuit-section">
+                <h2 class="section-title">📋 메인 회로도</h2>
+                
+                <svg class="schematic-svg" viewBox="0 0 1200 600">
+                    <!-- Arduino Nano ESP32 -->
+                    <rect class="component-rect" x="500" y="250" width="200" height="100"/>
+                    <text class="component-text" x="600" y="285">Arduino Nano ESP32</text>
+                    <text class="component-text" x="600" y="305" font-size="10">ESP32-S3</text>
+                    <text class="component-text" x="600" y="320" font-size="10">WiFi + Bluetooth</text>
+                    
+                    <!-- MPU9250 -->
+                    <rect class="component-rect" x="50" y="100" width="120" height="80"/>
+                    <text class="component-text" x="110" y="130">MPU9250</text>
+                    <text class="component-text" x="110" y="150" font-size="10">9DOF IMU</text>
+                    <text class="component-text" x="110" y="165" font-size="10">I2C: 0x68</text>
+                    
+                    <!-- 4-in-1 ESC -->
+                    <rect class="component-rect" x="850" y="200" width="120" height="200"/>
+                    <text class="component-text" x="910" y="240">4-in-1 ESC</text>
+                    <text class="component-text" x="910" y="255" font-size="10">20x20mm</text>
+                    <text class="component-text" x="910" y="280" font-size="9">M1(FL)</text>
+                    <text class="component-text" x="910" y="300" font-size="9">M2(FR)</text>
+                    <text class="component-text" x="910" y="320" font-size="9">M3(RL)</text>
+                    <text class="component-text" x="910" y="340" font-size="9">M4(RR)</text>
+                    
+                    <!-- SBUS Receiver -->
+                    <rect class="component-rect" x="200" y="400" width="120" height="60"/>
+                    <text class="component-text" x="260" y="425">SBUS RX</text>
+                    <text class="component-text" x="260" y="445" font-size="10">16CH</text>
+                    
+                    <!-- Walksnail VTX -->
+                    <rect class="component-rect" x="800" y="50" width="150" height="80"/>
+                    <text class="component-text" x="875" y="80">Walksnail</text>
+                    <text class="component-text" x="875" y="100" font-size="10">Avatar HD V2</text>
+                    <text class="component-text" x="875" y="115" font-size="10">20x20mm</text>
+                    
+                    <!-- Battery -->
+                    <rect class="component-rect" x="50" y="450" width="120" height="60"/>
+                    <text class="component-text" x="110" y="475">LAVA 550mAh</text>
+                    <text class="component-text" x="110" y="495" font-size="10">1S LiPo</text>
+                    
+                    <!-- 연결선들 -->
+                    <!-- I2C 연결 (MPU9250 to ESP32) -->
+                    <line class="wire-i2c" x1="170" y1="130" x2="500" y2="270"/>
+                    <line class="wire-i2c" x1="170" y1="150" x2="500" y2="290"/>
+                    
+                    <!-- PWM 연결 (ESP32 to ESC) -->
+                    <line class="wire-pwm" x1="700" y1="280" x2="850" y2="280"/>
+                    <line class="wire-pwm" x1="700" y1="290" x2="850" y2="300"/>
+                    <line class="wire-pwm" x1="700" y1="300" x2="850" y2="320"/>
+                    <line class="wire-pwm" x1="700" y1="310" x2="850" y2="340"/>
+                    
+                    <!-- SBUS 연결 -->
+                    <line class="wire-signal" x1="320" y1="430" x2="500" y2="320"/>
+                    
+                    <!-- VTX UART 연결 -->
+                    <line class="wire-signal" x1="800" y1="90" x2="700" y2="280"/>
+                    <line class="wire-signal" x1="800" y1="110" x2="700" y2="290"/>
+                    
+                    <!-- 전원 연결 -->
+                    <line class="wire-power" x1="170" y1="480" x2="500" y2="350"/>
+                    <line class="wire-ground" x1="170" y1="495" x2="500" y2="350"/>
+                    
+                    <!-- 핀 라벨들 -->
+                    <text class="pin-text" x="180" y="125">SDA</text>
+                    <text class="pin-text" x="180" y="145">SCL</text>
+                    <text class="pin-text" x="480" y="265">Pin21</text>
+                    <text class="pin-text" x="480" y="285">Pin22</text>
+                    
+                    <text class="pin-text" x="720" y="275">Pin5</text>
+                    <text class="pin-text" x="720" y="285">Pin6</text>
+                    <text class="pin-text" x="720" y="295">Pin7</text>
+                    <text class="pin-text" x="720" y="305">Pin8</text>
+                    
+                    <text class="pin-text" x="330" y="425">SBUS</text>
+                    <text class="pin-text" x="480" y="315">Pin4</text>
+                    
+                    <text class="pin-text" x="770" y="85">TX</text>
+                    <text class="pin-text" x="770" y="105">RX</text>
+                    <text class="pin-text" x="720" y="275">Pin17</text>
+                    <text class="pin-text" x="720" y="285">Pin16</text>
+                </svg>
+                
+                <div class="legend">
+                    <h3>연결선 범례:</h3>
+                    <div class="legend-item">
+                        <span class="legend-line wire-power"></span>전원 (VCC)
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-line wire-ground"></span>그라운드 (GND)
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-line wire-i2c"></span>I2C (SDA/SCL)
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-line wire-pwm"></span>PWM (모터)
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-line wire-signal"></span>신호선 (UART/SBUS)
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 핀 연결표 -->
+            <div class="circuit-section">
+                <h2 class="section-title">📌 상세 핀 연결표</h2>
+                
+                <table class="pin-table">
+                    <thead>
+                        <tr>
+                            <th>부품</th>
+                            <th>핀</th>
+                            <th>Arduino Pin</th>
+                            <th>전압</th>
+                            <th>설명</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td rowspan="4"><strong>MPU9250</strong></td>
+                            <td>VCC</td>
+                            <td>3.3V</td>
+                            <td><span class="voltage-indicator voltage-3v3">3.3V</span></td>
+                            <td>센서 전원</td>
+                        </tr>
+                        <tr>
+                            <td>GND</td>
+                            <td>GND</td>
+                            <td><span class="voltage-indicator voltage-signal">GND</span></td>
+                            <td>그라운드</td>
+                        </tr>
+                        <tr>
+                            <td>SDA</td>
+                            <td>Pin 21</td>
+                            <td><span class="voltage-indicator voltage-signal">3.3V</span></td>
+                            <td>I2C 데이터</td>
+                        </tr>
+                        <tr>
+                            <td>SCL</td>
+                            <td>Pin 22</td>
+                            <td><span class="voltage-indicator voltage-signal">3.3V</span></td>
+                            <td>I2C 클럭</td>
+                        </tr>
+                        
+                        <tr>
+                            <td rowspan="6"><strong>4-in-1 ESC</strong></td>
+                            <td>Motor 1 (FL)</td>
+                            <td>Pin 5</td>
+                            <td><span class="voltage-indicator voltage-signal">PWM</span></td>
+                            <td>전면 좌측 모터</td>
+                        </tr>
+                        <tr>
+                            <td>Motor 2 (FR)</td>
+                            <td>Pin 6</td>
+                            <td><span class="voltage-indicator voltage-signal">PWM</span></td>
+                            <td>전면 우측 모터</td>
+                        </tr>
+                        <tr>
+                            <td>Motor 3 (RL)</td>
+                            <td>Pin 7</td>
+                            <td><span class="voltage-indicator voltage-signal">PWM</span></td>
+                            <td>후면 좌측 모터</td>
+                        </tr>
+                        <tr>
+                            <td>Motor 4 (RR)</td>
+                            <td>Pin 8</td>
+                            <td><span class="voltage-indicator voltage-signal">PWM</span></td>
+                            <td>후면 우측 모터</td>
+                        </tr>
+                        <tr>
+                            <td>VCC</td>
+                            <td>Battery +</td>
+                            <td><span class="voltage-indicator voltage-5v">4.2V</span></td>
+                            <td>배터리 직접 연결</td>
+                        </tr>
+                        <tr>
+                            <td>GND</td>
+                            <td>Battery -</td>
+                            <td><span class="voltage-indicator voltage-signal">GND</span></td>
+                            <td>배터리 그라운드</td>
+                        </tr>
+                        
+                        <tr>
+                            <td rowspan="3"><strong>SBUS 수신기</strong></td>
+                            <td>SBUS</td>
+                            <td>Pin 4</td>
+                            <td><span class="voltage-indicator voltage-signal">3.3V</span></td>
+                            <td>SBUS 신호 (반전 필요)</td>
+                        </tr>
+                        <tr>
+                            <td>VCC</td>
+                            <td>3.3V</td>
+                            <td><span class="voltage-indicator voltage-3v3">3.3V</span></td>
+                            <td>수신기 전원</td>
+                        </tr>
+                        <tr>
+                            <td>GND</td>
+                            <td>GND</td>
+                            <td><span class="voltage-indicator voltage-signal">GND</span></td>
+                            <td>그라운드</td>
+                        </tr>
+                        
+                        <tr>
+                            <td rowspan="4"><strong>Walksnail VTX</strong></td>
+                            <td>TX</td>
+                            <td>Pin 16</td>
+                            <td><span class="voltage-indicator voltage-signal">3.3V</span></td>
+                            <td>VTX로 데이터 전송</td>
+                        </tr>
+                        <tr>
+                            <td>RX</td>
+                            <td>Pin 17</td>
+                            <td><span class="voltage-indicator voltage-signal">3.3V</span></td>
+                            <td>VTX에서 데이터 수신</td>
+                        </tr>
+                        <tr>
+                            <td>VCC</td>
+                            <td>3.3V</td>
+                            <td><span class="voltage-indicator voltage-3v3">3.3V</span></td>
+                            <td>VTX 전원</td>
+                        </tr>
+                        <tr>
+                            <td>GND</td>
+                            <td>GND</td>
+                            <td><span class="voltage-indicator voltage-signal">GND</span></td>
+                            <td>그라운드</td>
+                        </tr>
+                        
+                        <tr>
+                            <td rowspan="2"><strong>배터리 모니터</strong></td>
+                            <td>Battery +</td>
+                            <td>Pin A0 (분압)</td>
+                            <td><span class="voltage-indicator voltage-signal">ADC</span></td>
+                            <td>전압 측정 (분압저항)</td>
+                        </tr>
+                        <tr>
+                            <td>GND</td>
+                            <td>GND</td>
+                            <td><span class="voltage-indicator voltage-signal">GND</span></td>
+                            <td>기준 그라운드</td>
+                        </tr>
+                        
+                        <tr>
+                            <td><strong>상태 LED</strong></td>
+                            <td>LED+</td>
+                            <td>Pin 2</td>
+                            <td><span class="voltage-indicator voltage-signal">3.3V</span></td>
+                            <td>시스템 상태 표시</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- 전원 분배도 -->
+            <div class="circuit-section">
+                <h2 class="section-title">🔋 전원 분배도</h2>
+                
+                <div class="circuit-board">
+                    <svg width="100%" height="300" viewBox="0 0 800 300">
+                        <!-- Battery -->
+                        <rect class="component-rect" x="50" y="120" width="100" height="60"/>
+                        <text class="component-text" x="100" y="145">LAVA 550mAh</text>
+                        <text class="component-text" x="100" y="165" font-size="10">1S (4.2V)</text>
+                        
+                        <!-- Arduino Nano ESP32 -->
+                        <rect class="component-rect" x="300" y="50" width="120" height="80"/>
+                        <text class="component-text" x="360" y="85">Arduino</text>
+                        <text class="component-text" x="360" y="105" font-size="10">Nano ESP32</text>
+                        
+                        <!-- MPU9250 -->
+                        <rect class="component-rect" x="300" y="170" width="80" height="60"/>
+                        <text class="component-text" x="340" y="195">MPU9250</text>
+                        <text class="component-text" x="340" y="215" font-size="10">3.3V</text>
+                        
+                        <!-- SBUS RX -->
+                        <rect class="component-rect" x="450" y="170" width="80" height="60"/>
+                        <text class="component-text" x="490" y="195">SBUS RX</text>
+                        <text class="component-text" x="490" y="215" font-size="10">3.3V</text>
+                        
+                        <!-- Walksnail VTX -->
+                        <rect class="component-rect" x="570" y="50" width="100" height="80"/>
+                        <text class="component-text" x="620" y="85">Walksnail</text>
+                        <text class="component-text" x="620" y="105" font-size="10">VTX</text>
+                        
+                        <!-- 4-in-1 ESC -->
+                        <rect class="component-rect" x="600" y="170" width="80" height="60"/>
+                        <text class="component-text" x="640" y="195">4-in-1</text>
+                        <text class="component-text" x="640" y="215" font-size="10">ESC</text>
+                        
+                        <!-- 전원선 -->
+                        <!-- Battery to Arduino -->
+                        <line class="wire-power" x1="150" y1="140" x2="300" y2="90"/>
+                        <text class="pin-text" x="200" y="110">4.2V → USB/VIN</text>
+                        
+                        <!-- Arduino 3.3V to sensors -->
+                        <line class="wire-power" x1="360" y1="130" x2="340" y2="170"/>
+                        <line class="wire-power" x1="360" y1="130" x2="490" y2="170"/>
+                        <line class="wire-power" x1="420" y1="90" x2="570" y2="90"/>
+                        <text class="pin-text" x="340" y="150">3.3V</text>
+                        <text class="pin-text" x="450" y="150">3.3V</text>
+                        <text class="pin-text" x="500" y="85">3.3V</text>
+                        
+                        <!-- Battery direct to ESC -->
+                        <line class="wire-power" x1="150" y1="160" x2="600" y2="200"/>
+                        <text class="pin-text" x="400" y="185">4.2V Direct</text>
+                        
+                        <!-- Ground connections -->
+                        <line class="wire-ground" x1="150" y1="170" x2="680" y2="170"/>
+                        <text class="pin-text" x="400" y="165">GND Bus</text>
+                    </svg>
+                </div>
+                
+                <div class="info-box">
+                    <h3>⚡ 전원 공급 방식</h3>
+                    <ul>
+                        <li><strong>Arduino Nano ESP32</strong>: 1S 배터리 (4.2V)를 USB/VIN 핀으로 직접 공급</li>
+                        <li><strong>센서들 (MPU9250, SBUS, VTX)</strong>: Arduino의 3.3V 출력 사용</li>
+                        <li><strong>4-in-1 ESC</strong>: 1S 배터리 직접 연결 (고전류 필요)</li>
+                        <li><strong>총 전류 소모</strong>: 유휴시 ~200mA, 최대 비행시 ~15A</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- 배터리 전압 분압 회로 -->
+            <div class="circuit-section">
+                <h2 class="section-title">📊 배터리 전압 측정 회로</h2>
+                
+                <div class="circuit-board">
+                    <svg width="100%" height="200" viewBox="0 0 600 200">
+                        <!-- Battery positive -->
+                        <circle cx="100" cy="100" r="20" fill="#e74c3c" stroke="white" stroke-width="2"/>
+                        <text class="component-text" x="100" y="105">BAT+</text>
+                        <text class="pin-text" x="100" y="130">4.2V</text>
+                        
+                        <!-- Resistor 1 -->
+                        <rect x="200" y="85" width="60" height="30" fill="none" stroke="#8e44ad" stroke-width="3"/>
+                        <text class="component-text" x="230" y="105" fill="#8e44ad">10kΩ</text>
+                        
+                        <!-- Resistor 2 -->
+                        <rect x="300" y="85" width="60" height="30" fill="none" stroke="#8e44ad" stroke-width="3"/>
+                        <text class="component-text" x="330" y="105" fill="#8e44ad">5kΩ</text>
+                        
+                        <!-- ADC Pin -->
+                        <circle cx="450" cy="100" r="20" fill="#27ae60" stroke="white" stroke-width="2"/>
+                        <text class="component-text" x="450" y="105">A0</text>
+                        <text class="pin-text" x="450" y="130">max 3.3V</text>
+                        
+                        <!-- Ground -->
+                        <rect x="300" y="150" width="60" height="10" fill="#2c3e50"/>
+                        <text class="component-text" x="330" y="175">GND</text>
+                        
+                        <!-- Connections -->
+                        <line class="wire-power" x1="120" y1="100" x2="200" y2="100"/>
+                        <line class="wire-signal" x1="260" y1="100" x2="300" y2="100"/>
+                        <line class="wire-signal" x1="360" y1="100" x2="430" y2="100"/>
+                        <line class="wire-ground" x1="330" y1="115" x2="330" y2="150"/>
+                        
+                        <!-- Voltage labels -->
+                        <text class="pin-text" x="280" y="90">2.8V</text>
+                        <text class="pin-text" x="390" y="90">(4.2V × 5/15)</text>
+                    </svg>
+                </div>
+                
+                <div class="info-box">
+                    <h3>🔢 전압 분배 계산</h3>
+                    <ul>
+                        <li><strong>분압비</strong>: 5kΩ / (10kΩ + 5kΩ) = 1/3</li>
+                        <li><strong>최대 입력</strong>: 4.2V × (1/3) = 1.4V → 안전 마진 확보</li>
+                        <li><strong>최소 입력</strong>: 3.0V × (1/3) = 1.0V → 측정 가능</li>
+                        <li><strong>코드에서 변환</strong>: voltage = ADC_value × 3.3V / 4095 × 3</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- SBUS 신호 반전 회로 -->
+            <div class="circuit-section">
+                <h2 class="section-title">🔄 SBUS 신호 반전 회로</h2>
+                
+                <div class="circuit-board">
+                    <svg width="100%" height="200" viewBox="0 0 700 200">
+                        <!-- SBUS Receiver -->
+                        <rect class="component-rect" x="50" y="75" width="100" height="50"/>
+                        <text class="component-text" x="100" y="105">SBUS RX</text>
+                        
+                        <!-- Inverter (Software) -->
+                        <circle cx="300" cy="100" r="30" fill="none" stroke="#f39c12" stroke-width="3"/>
+                        <text class="component-text" x="300" y="105" fill="#f39c12">INV</text>
+                        <text class="pin-text" x="300" y="130">Software</text>
+                        
+                        <!-- Arduino -->
+                        <rect class="component-rect" x="450" y="75" width="100" height="50"/>
+                        <text class="component-text" x="500" y="105">Arduino</text>
+                        <text class="pin-text" x="500" y="140">Pin 4</text>
+                        
+                        <!-- Connections -->
+                        <line class="wire-signal" x1="150" y1="100" x2="270" y2="100"/>
+                        <line class="wire-signal" x1="330" y1="100" x2="450" y2="100"/>
+                        
+                        <!-- Signal labels -->
+                        <text class="pin-text" x="200" y="90">SBUS</text>
+                        <text class="pin-text" x="380" y="90">Inverted</text>
+                        
+                        <!-- Voltage levels -->
+                        <text class="pin-text" x="200" y="120">반전 신호</text>
+                        <text class="pin-text" x="380" y="120">정상 신호</text>
+                    </svg>
+                </div>
+                
+                <div class="warning-box">
+                    <h3>⚠️ SBUS 신호 처리 주의사항</h3>
+                    <ul>
+                        <li><strong>SBUS는 반전 신호</strong>: 하드웨어 또는 소프트웨어 반전 필요</li>
+                        <li><strong>Arduino Nano ESP32</strong>: Serial2.begin()에서 SBUS_INVERT=true 설정</li>
+                        <li><strong>대안</strong>: 하드웨어 인버터 (74HC04) 또는 트랜지스터 사용 가능</li>
+                        <li><strong>전압 레벨</strong>: 3.3V 호환 (5V 수신기 사용 시 레벨 시프터 필요)</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- 모터 배치도 -->
+            <div class="circuit-section">
+                <h2 class="section-title">🚁 모터 배치 및 회전 방향</h2>
+                
+                <div class="circuit-board">
+                    <svg width="100%" height="400" viewBox="0 0 600 400">
+                        <!-- Frame outline -->
+                        <rect x="150" y="100" width="300" height="200" fill="none" stroke="#3498db" stroke-width="3" stroke-dasharray="10,5"/>
+                        <text class="component-text" x="300" y="90" fill="#3498db">Pavo Pico Frame (65mm)</text>
+                        
+                        <!-- Motor 1 - Front Left -->
+                        <circle cx="200" cy="150" r="25" fill="#e74c3c" stroke="white" stroke-width="3"/>
+                        <text class="component-text" x="200" y="155">M1</text>
+                        <text class="pin-text" x="200" y="185">Pin 5</text>
+                        <text class="pin-text" x="200" y="200">FL - CCW</text>
+                        
+                        <!-- Motor 2 - Front Right -->
+                        <circle cx="400" cy="150" r="25" fill="#27ae60" stroke="white" stroke-width="3"/>
+                        <text class="component-text" x="400" y="155">M2</text>
+                        <text class="pin-text" x="400" y="185">Pin 6</text>
+                        <text class="pin-text" x="400" y="200">FR - CW</text>
+                        
+                        <!-- Motor 3 - Rear Left -->
+                        <circle cx="200" cy="250" r="25" fill="#27ae60" stroke="white" stroke-width="3"/>
+                        <text class="component-text" x="200" y="255">M3</text>
+                        <text class="pin-text" x="200" y="285">Pin 7</text>
+                        <text class="pin-text" x="200" y="300">RL - CW</text>
+                        
+                        <!-- Motor 4 - Rear Right -->
+                        <circle cx="400" cy="250" r="25" fill="#e74c3c" stroke="white" stroke-width="3"/>
+                        <text class="component-text" x="400" y="255">M4</text>
+                        <text class="pin-text" x="400" y="285">Pin 8</text>
+                        <text class="pin-text" x="400" y="300">RR - CCW</text>
+                        
+                        <!-- Center (Arduino position) -->
+                        <rect x="275" y="175" width="50" height="50" fill="#2c3e50" stroke="#3498db" stroke-width="2"/>
+                        <text class="component-text" x="300" y="205">ESP32</text>
+                        
+                        <!-- Rotation arrows -->
+                        <!-- M1 - CCW -->
+                        <path d="M 180 130 A 20 20 0 0 0 220 130" fill="none" stroke="#f39c12" stroke-width="3" marker-end="url(#arrowhead)"/>
+                        
+                        <!-- M2 - CW -->
+                        <path d="M 420 130 A 20 20 0 0 1 380 130" fill="none" stroke="#f39c12" stroke-width="3" marker-end="url(#arrowhead)"/>
+                        
+                        <!-- M3 - CW -->
+                        <path d="M 220 270 A 20 20 0 0 1 180 270" fill="none" stroke="#f39c12" stroke-width="3" marker-end="url(#arrowhead)"/>
+                        
+                        <!-- M4 - CCW -->
+                        <path d="M 380 270 A 20 20 0 0 0 420 270" fill="none" stroke="#f39c12" stroke-width="3" marker-end="url(#arrowhead)"/>
+                        
+                        <!-- Arrow marker definition -->
+                        <defs>
+                            <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+                                <polygon points="0 0, 10 3.5, 0 7" fill="#f39c12"/>
+                            </marker>
+                        </defs>
+                        
+                        <!-- Direction indicators -->
+                        <text class="pin-text" x="300" y="50">FRONT</text>
+                        <text class="pin-text" x="300" y="370">REAR</text>
+                        <text class="pin-text" x="50" y="200">LEFT</text>
+                        <text class="pin-text" x="520" y="200">RIGHT</text>
+                        
+                        <!-- Diagonal lines for X configuration -->
+                        <line x1="200" y1="150" x2="400" y2="250" stroke="#bdc3c7" stroke-width="1" stroke-dasharray="5,5"/>
+                        <line x1="400" y1="150" x2="200" y2="250" stroke="#bdc3c7" stroke-width="1" stroke-dasharray="5,5"/>
+                    </svg>
+                </div>
+                
+                <div class="info-box">
+                    <h3>🔄 모터 회전 방향 및 제어</h3>
+                    <ul>
+                        <li><strong>X 형태 배치</strong>: 대각선 모터가 같은 방향으로 회전</li>
+                        <li><strong>반시계방향(CCW)</strong>: M1(FL), M4(RR) - 빨간색</li>
+                        <li><strong>시계방향(CW)</strong>: M2(FR), M3(RL) - 녹색</li>
+                        <li><strong>프로펠러</strong>: 회전 방향에 맞는 정/역회전 프로펠러 사용</li>
+                        <li><strong>PWM 신호</strong>: 1000~2000μs, 1000=정지, 2000=최대</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- 조립 순서 -->
+            <div class="circuit-section">
+                <h2 class="section-title">🔧 조립 및 배선 순서</h2>
+                
+                <div class="pin-table">
+                    <thead>
+                        <tr>
+                            <th>순서</th>
+                            <th>작업</th>
+                            <th>주의사항</th>
+                            <th>도구</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>프레임 조립</td>
+                            <td>모터 마운트 정렬 확인</td>
+                            <td>드라이버, 육각렌치</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>4-in-1 ESC 장착</td>
+                            <td>20×20mm 마운트 구멍 맞춤</td>
+                            <td>M2 볼트</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>Arduino Nano ESP32 장착</td>
+                            <td>USB 포트 접근 가능하게 배치</td>
+                            <td>양면테이프 또는 스탠드오프</td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td>MPU9250 연결</td>
+                            <td>I2C 주소 0x68 확인</td>
+                            <td>납땜, 듀폰 케이블</td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td>배터리 전압 분압회로</td>
+                            <td>저항값 정확히 측정</td>
+                            <td>멀티미터, 납땜</td>
+                        </tr>
+                        <tr>
+                            <td>6</td>
+                            <td>SBUS 수신기 연결</td>
+                            <td>신호 반전 설정 확인</td>
+                            <td>듀폰 케이블</td>
+                        </tr>
+                        <tr>
+                            <td>7</td>
+                            <td>Walksnail VTX 장착</td>
+                            <td>안테나 손상 주의</td>
+                            <td>M2 볼트</td>
+                        </tr>
+                        <tr>
+                            <td>8</td>
+                            <td>모터 장착</td>
+                            <td>회전 방향별 프로펠러 확인</td>
+                            <td>모터 나사</td>
+                        </tr>
+                        <tr>
+                            <td>9</td>
+                            <td>배선 정리</td>
+                            <td>프로펠러에 닿지 않게 고정</td>
+                            <td>타이랩, 열수축튜브</td>
+                        </tr>
+                        <tr>
+                            <td>10</td>
+                            <td>펌웨어 업로드</td>
+                            <td>시리얼 모니터로 상태 확인</td>
+                            <td>Arduino IDE, USB 케이블</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- 트러블슈팅 -->
+            <div class="circuit-section">
+                <h2 class="section-title">🔍 전기적 트러블슈팅</h2>
+                
+                <div class="warning-box">
+                    <h3>⚠️ 자주 발생하는 전기적 문제</h3>
+                    <ul>
+                        <li><strong>MPU9250 감지 안됨</strong>
+                            <br>→ I2C 풀업 저항 확인 (4.7kΩ)
+                            <br>→ 전원 전압 3.3V 확인
+                            <br>→ SDA/SCL 연결 확인</li>
+                        
+                        <li><strong>모터가 회전하지 않음</strong>
+                            <br>→ ESC 캘리브레이션 재실행
+                            <br>→ PWM 신호 범위 확인 (1000~2000μs)
+                            <br>→ 배터리 전압 충분한지 확인</li>
+                        
+                        <li><strong>SBUS 데이터 수신 안됨</strong>
+                            <br>→ 신호 반전 설정 확인
+                            <br>→ 보드레이트 100000 확인
+                            <br>→ 수신기 바인딩 상태 확인</li>
+                        
+                        <li><strong>배터리 전압 측정 오류</strong>
+                            <br>→ 분압 저항값 재확인
+                            <br>→ ADC 기준전압 3.3V 확인
+                            <br>→ 코드의 변환 계수 조정</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- 성능 최적화 -->
+            <div class="circuit-section">
+                <h2 class="section-title">⚡ 전기적 성능 최적화</h2>
+                
+                <div class="info-box">
+                    <h3>🚀 최적화 팁</h3>
+                    <ul>
+                        <li><strong>전원 노이즈 제거</strong>
+                            <br>→ ESC와 Arduino 사이에 LC 필터 추가
+                            <br>→ 센서 전원에 100nF 바이패스 커패시터
+                            <br>→ 배터리 직렬에 470μF 전해 커패시터</li>
+                        
+                        <li><strong>신호 무결성</strong>
+                            <br>→ I2C 라인에 4.7kΩ 풀업 저항
+                            <br>→ 긴 신호선은 트위스트 페어 사용
+                            <br>→ 고주파 노이즈 차단용 페라이트 코어</li>
+                        
+                        <li><strong>열 관리</strong>
+                            <br>→ ESC에 적절한 에어플로우 확보
+                            <br>→ Arduino의 레귤레이터 온도 모니터링
+                            <br>→ VTX 방열판 추가 고려</li>
+                        
+                        <li><strong>EMI 대책</strong>
+                            <br>→ 모터선과 신호선 분리 배선
+                            <br>→ 금속 프레임 활용한 차폐
+                            <br>→ VTX 안테나 위치 최적화</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- 확장 가능성 -->
+            <div class="circuit-section">
+                <h2 class="section-title">🔮 향후 확장 계획</h2>
+                
+                <div class="pin-table">
+                    <thead>
+                        <tr>
+                            <th>확장 모듈</th>
+                            <th>연결 방법</th>
+                            <th>사용 핀</th>
+                            <th>기능</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>GPS 모듈</td>
+                            <td>UART</td>
+                            <td>Pin 14, 15</td>
+                            <td>위치 기반 자동 비행</td>
+                        </tr>
+                        <tr>
+                            <td>바로미터 (BMP280)</td>
+                            <td>I2C</td>
+                            <td>Pin 21, 22 (공유)</td>
+                            <td>정밀 고도 제어</td>
+                        </tr>
+                        <tr>
+                            <td>광류 센서</td>
+                            <td>SPI</td>
+                            <td>Pin 18, 19, 23</td>
+                            <td>실내 위치 유지</td>
+                        </tr>
+                        <tr>
+                            <td>라이다 센서</td>
+                            <td>I2C</td>
+                            <td>Pin 21, 22 (공유)</td>
+                            <td>장애물 회피</td>
+                        </tr>
+                        <tr>
+                            <td>SD 카드 모듈</td>
+                            <td>SPI</td>
+                            <td>Pin 18, 19, 23, 5</td>
+                            <td>블랙박스 로깅</td>
+                        </tr>
+                        <tr>
+                            <td>RGB LED 스트립</td>
+                            <td>PWM</td>
+                            <td>Pin 3</td>
+                            <td>상태 표시 및 야간 비행</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
