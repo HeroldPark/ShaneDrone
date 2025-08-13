@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>드론 통신 시스템 연결 구조</title>
+	<style>
+		body {
+			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+			margin: 0;
+			padding: 20px;
+			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+			color: #333;
+		}
+
+		.container {
+			max-width: 1600px;
+			margin: 0 auto;
+			background: white;
+			border-radius: 20px;
+			box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+			overflow: hidden;
+		}
+
+		.header {
+			background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+			color: white;
+			padding: 30px;
+			text-align: center;
+		}
+
+		.header h1 {
+			margin: 0;
+			font-size: 2.5em;
+			font-weight: 300;
+		}
+
+		.content {
+			padding: 40px;
+		}
+
+		.section {
+			margin-bottom: 50px;
+		}
+
+		.section-title {
+			color: #2c3e50;
+			font-size: 1.8em;
+			margin-bottom: 20px;
+			padding-bottom: 10px;
+			border-bottom: 3px solid #3498db;
+			display: flex;
+			align-items: center;
+			gap: 10px;
+		}
+
+		.connection-diagram {
+			background: #f8f9fa;
+			border-radius: 15px;
+			padding: 30px;
+			margin: 20px 0;
+			border: 2px solid #ddd;
+			position: relative;
+		}
+
+		.device {
+			background: #2c3e50;
+			border: 3px solid #3498db;
+			border-radius: 15px;
+			padding: 20px;
+			color: white;
+			text-align: center;
+			position: relative;
+			margin: 20px;
+			box-shadow: 0 8px 25px rgba(52, 152, 219, 0.3);
+		}
+
+		.device-title {
+			font-size: 1.2em;
+			font-weight: bold;
+			margin-bottom: 10px;
+		}
+
+		.device-details {
+			font-size: 0.9em;
+			opacity: 0.8;
+		}
+
+		.connection-line {
+			stroke-width: 4;
+			fill: none;
+			marker-end: url(#arrowhead);
+		}
+
+		.control-connection {
+			stroke: #e74c3c;
+		}
+
+		.video-connection {
+			stroke: #f39c12;
+		}
+
+		.telemetry-connection {
+			stroke: #27ae60;
+		}
+
+		.power-connection {
+			stroke: #8e44ad;
+		}
+
+		.connection-label {
+			background: white;
+			padding: 5px 10px;
+			border-radius: 15px;
+			font-size: 0.8em;
+			font-weight: bold;
+			border: 2px solid;
+			position: absolute;
+		}
+
+		.control-label {
+			border-color: #e74c3c;
+			color: #e74c3c;
+		}
+
+		.video-label {
+			border-color: #f39c12;
+			color: #f39c12;
+		}
+
+		.telemetry-label {
+			border-color: #27ae60;
+			color: #27ae60;
+		}
+
+		.frequency-info {
+			background: rgba(52, 152, 219, 0.1);
+			border: 2px solid #3498db;
+			border-radius: 10px;
+			padding: 15px;
+			margin: 10px 0;
+		}
+
+		.protocol-box {
+			background: #ecf0f1;
+			border-radius: 10px;
+			padding: 20px;
+			margin: 20px 0;
+			border-left: 5px solid #3498db;
+		}
+
+		.step-by-step {
+			background: #e8f5e8;
+			border-radius: 10px;
+			padding: 20px;
+			margin: 20px 0;
+			border-left: 5px solid #27ae60;
+		}
+
+		.step {
+			background: white;
+			border-radius: 8px;
+			padding: 15px;
+			margin: 10px 0;
+			border-left: 4px solid #27ae60;
+			position: relative;
+		}
+
+		.step-number {
+			background: #27ae60;
+			color: white;
+			border-radius: 50%;
+			width: 30px;
+			height: 30px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-weight: bold;
+			position: absolute;
+			left: -15px;
+			top: 15px;
+		}
+
+		.warning-box {
+			background: linear-gradient(135deg, #ff7675, #fd79a8);
+			color: white;
+			padding: 20px;
+			border-radius: 10px;
+			margin: 20px 0;
+			border-left: 5px solid #d63031;
+		}
+
+		.info-box {
+			background: linear-gradient(135deg, #74b9ff, #0984e3);
+			color: white;
+			padding: 20px;
+			border-radius: 10px;
+			margin: 20px 0;
+			border-left: 5px solid #2d3436;
+		}
+
+		.grid-layout {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+			gap: 30px;
+			margin: 30px 0;
+		}
+
+		.component-card {
+			background: white;
+			border-radius: 15px;
+			box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+			overflow: hidden;
+			border: 2px solid #ecf0f1;
+		}
+
+		.component-header {
+			background: #3498db;
+			color: white;
+			padding: 15px;
+			font-weight: bold;
+			text-align: center;
+		}
+
+		.component-content {
+			padding: 20px;
+		}
+
+		.signal-flow {
+			background: #2c3e50;
+			color: white;
+			padding: 20px;
+			border-radius: 10px;
+			margin: 20px 0;
+			font-family: 'Courier New', monospace;
+		}
+
+		.troubleshooting {
+			background: #fff3cd;
+			border: 1px solid #ffeaa7;
+			border-radius: 10px;
+			padding: 20px;
+			margin: 20px 0;
+		}
+
+		.legend {
+			background: #f8f9fa;
+			border-radius: 10px;
+			padding: 20px;
+			margin: 20px 0;
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+			gap: 15px;
+		}
+
+		.legend-item {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+		}
+
+		.legend-line {
+			width: 40px;
+			height: 4px;
+			border-radius: 2px;
+		}
+
+		.pairing-guide {
+			background: #e3f2fd;
+			border-radius: 10px;
+			padding: 20px;
+			margin: 20px 0;
+			border: 2px solid #2196f3;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="container">
+		<div class="header">
+			<h1>📡 드론 통신 시스템 완전 가이드</h1>
+			<p>조종기 ↔ 수신기 ↔ 드론 ↔ VTX ↔ 고글 연결 구조</p>
+		</div>
+
+		<div class="content">
+			<!-- 전체 시스템 개요 -->
+			<div class="section">
+				<h2 class="section-title">🌐 전체 시스템 연결 개요</h2>
+
+				<div class="connection-diagram">
+					<svg width="100%" height="400" viewBox="0 0 1200 400">
+						<!-- 조종기 -->
+						<rect x="50" y="150" width="150" height="100" rx="15" fill="#e74c3c" stroke="#c0392b"
+							stroke-width="3" />
+						<text x="125" y="185" text-anchor="middle" fill="white" font-size="14"
+							font-weight="bold">조종기</text>
+						<text x="125" y="205" text-anchor="middle" fill="white" font-size="12">TX16S</text>
+						<text x="125" y="220" text-anchor="middle" fill="white" font-size="10">2.4GHz 송신</text>
+
+						<!-- 드론 -->
+						<rect x="450" y="100" width="200" height="200" rx="15" fill="#2c3e50" stroke="#34495e"
+							stroke-width="3" />
+						<text x="550" y="130" text-anchor="middle" fill="white" font-size="16" font-weight="bold">DIY
+							Pavo Pico</text>
+						<text x="550" y="150" text-anchor="middle" fill="white" font-size="12">Arduino Nano ESP32</text>
+
+						<!-- 드론 내부 구성요소 -->
+						<rect x="470" y="160" width="70" height="30" rx="5" fill="#3498db" stroke="white"
+							stroke-width="1" />
+						<text x="505" y="180" text-anchor="middle" fill="white" font-size="10">SBUS RX</text>
+
+						<rect x="560" y="160" width="70" height="30" rx="5" fill="#f39c12" stroke="white"
+							stroke-width="1" />
+						<text x="595" y="180" text-anchor="middle" fill="white" font-size="10">VTX</text>
+
+						<rect x="470" y="210" width="70" height="30" rx="5" fill="#9b59b6" stroke="white"
+							stroke-width="1" />
+						<text x="505" y="230" text-anchor="middle" fill="white" font-size="10">MPU9250</text>
+
+						<rect x="560" y="210" width="70" height="30" rx="5" fill="#e67e22" stroke="white"
+							stroke-width="1" />
+						<text x="595" y="230" text-anchor="middle" fill="white" font-size="10">ESC</text>
+
+						<!-- 고글 -->
+						<rect x="900" y="150" width="150" height="100" rx="15" fill="#f39c12" stroke="#e67e22"
+							stroke-width="3" />
+						<text x="975" y="185" text-anchor="middle" fill="white" font-size="14" font-weight="bold">FPV
+							고글</text>
+						<text x="975" y="205" text-anchor="middle" fill="white" font-size="12">Goggles X</text>
+						<text x="975" y="220" text-anchor="middle" fill="white" font-size="10">5.8GHz 수신</text>
+
+						<!-- 연결선 -->
+						<!-- 조종기 → 드론 (제어 신호) -->
+						<defs>
+							<marker id="arrowhead" markerWidth="10" markerHeight="7" refX="10" refY="3.5" orient="auto">
+								<polygon points="0 0, 10 3.5, 0 7" fill="#e74c3c" />
+							</marker>
+							<marker id="arrowhead-video" markerWidth="10" markerHeight="7" refX="10" refY="3.5"
+								orient="auto">
+								<polygon points="0 0, 10 3.5, 0 7" fill="#f39c12" />
+							</marker>
+							<marker id="arrowhead-telem" markerWidth="10" markerHeight="7" refX="10" refY="3.5"
+								orient="auto">
+								<polygon points="0 0, 10 3.5, 0 7" fill="#27ae60" />
+							</marker>
+						</defs>
+
+						<line class="connection-line control-connection" x1="200" y1="180" x2="450" y2="180"
+							marker-end="url(#arrowhead)" />
+						<text x="325" y="170" text-anchor="middle" class="connection-label control-label">제어 신호
+							(SBUS)</text>
+						<text x="325" y="195" text-anchor="middle" font-size="10" fill="#e74c3c">2.4GHz</text>
+
+						<!-- 드론 → 고글 (영상 신호) -->
+						<line class="connection-line video-connection" x1="650" y1="175" x2="900" y2="175"
+							marker-end="url(#arrowhead-video)" />
+						<text x="775" y="165" text-anchor="middle" class="connection-label video-label">영상 신호
+							(HD)</text>
+						<text x="775" y="190" text-anchor="middle" font-size="10" fill="#f39c12">5.8GHz</text>
+
+						<!-- 드론 → 조종기 (텔레메트리) -->
+						<path class="connection-line telemetry-connection" d="M 450 220 Q 325 280 200 220"
+							marker-end="url(#arrowhead-telem)" />
+						<text x="325" y="270" text-anchor="middle" class="connection-label telemetry-label">텔레메트리</text>
+						<text x="325" y="290" text-anchor="middle" font-size="10" fill="#27ae60">2.4GHz</text>
+
+						<!-- 주파수 정보 -->
+						<text x="600" y="50" text-anchor="middle" font-size="16" font-weight="bold" fill="#2c3e50">통신
+							주파수</text>
+						<text x="300" y="350" text-anchor="middle" font-size="12" fill="#e74c3c">2.4GHz: 제어 +
+							텔레메트리</text>
+						<text x="750" y="350" text-anchor="middle" font-size="12" fill="#f39c12">5.8GHz: 영상 전송</text>
+					</svg>
+				</div>
+
+				<div class="legend">
+					<div class="legend-item">
+						<div class="legend-line" style="background: #e74c3c;"></div>
+						<span>제어 신호 (2.4GHz)</span>
+					</div>
+					<div class="legend-item">
+						<div class="legend-line" style="background: #f39c12;"></div>
+						<span>영상 신호 (5.8GHz)</span>
+					</div>
+					<div class="legend-item">
+						<div class="legend-line" style="background: #27ae60;"></div>
+						<span>텔레메트리 (2.4GHz)</span>
+					</div>
+				</div>
+			</div>
+
+			<!-- 신호 흐름 상세 -->
+			<div class="section">
+				<h2 class="section-title">🔄 신호 흐름 상세 분석</h2>
+
+				<div class="grid-layout">
+					<!-- 제어 신호 -->
+					<div class="component-card">
+						<div class="component-header" style="background: #e74c3c;">
+							📡 제어 신호 경로
+						</div>
+						<div class="component-content">
+							<div class="signal-flow">
+								조종기 스틱 조작
+								↓
+								EdgeTX 펌웨어 처리
+								↓
+								2.4GHz RF 모듈 송신
+								↓
+								공중 전파 (2.4GHz)
+								↓
+								드론의 SBUS 수신기
+								↓
+								SBUS 프로토콜 디코딩
+								↓
+								Arduino Nano ESP32
+								↓
+								PID 제어 알고리즘
+								↓
+								모터 PWM 출력
+							</div>
+
+							<div class="frequency-info">
+								<strong>📊 제어 신호 특성</strong>
+								<ul>
+									<li><strong>주파수:</strong> 2.4GHz ISM 대역</li>
+									<li><strong>프로토콜:</strong> SBUS (100kbps)</li>
+									<li><strong>지연시간:</strong> ~20-30ms</li>
+									<li><strong>범위:</strong> 1-2km (가시거리)</li>
+									<li><strong>채널:</strong> 16채널 동시 전송</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+
+					<!-- 영상 신호 -->
+					<div class="component-card">
+						<div class="component-header" style="background: #f39c12;">
+							📹 영상 신호 경로
+						</div>
+						<div class="component-content">
+							<div class="signal-flow">
+								카메라 영상 촬영
+								↓
+								Avatar HD V2 인코딩
+								↓
+								H.264/H.265 압축
+								↓
+								5.8GHz 송신
+								↓
+								공중 전파 (5.8GHz)
+								↓
+								고글의 수신기
+								↓
+								영상 디코딩
+								↓
+								디스플레이 출력
+								↓
+								조종자 시야
+							</div>
+
+							<div class="frequency-info">
+								<strong>📊 영상 신호 특성</strong>
+								<ul>
+									<li><strong>주파수:</strong> 5.8GHz (한국 불법)</li>
+									<li><strong>해상도:</strong> 1080p60fps</li>
+									<li><strong>지연시간:</strong> ~25-40ms</li>
+									<li><strong>범위:</strong> 500m-4km</li>
+									<li><strong>코덱:</strong> H.265 (HEVC)</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+
+					<!-- 텔레메트리 -->
+					<div class="component-card">
+						<div class="component-header" style="background: #27ae60;">
+							📊 텔레메트리 경로
+						</div>
+						<div class="component-content">
+							<div class="signal-flow">
+								센서 데이터 수집
+								↓
+								Arduino 데이터 처리
+								↓
+								MSP 프로토콜 패킷
+								↓
+								SBUS 수신기 (업링크)
+								↓
+								2.4GHz 역방향 전송
+								↓
+								조종기 수신
+								↓
+								EdgeTX 디스플레이
+								↓
+								조종자 모니터링
+							</div>
+
+							<div class="frequency-info">
+								<strong>📊 텔레메트리 특성</strong>
+								<ul>
+									<li><strong>주파수:</strong> 2.4GHz (역방향)</li>
+									<li><strong>프로토콜:</strong> MSP, SmartPort</li>
+									<li><strong>업데이트:</strong> 1-10Hz</li>
+									<li><strong>데이터:</strong> 배터리, GPS, 자세</li>
+									<li><strong>범위:</strong> 제어신호와 동일</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- 바인딩 과정 -->
+			<div class="section">
+				<h2 class="section-title">🔗 바인딩 과정 단계별 가이드</h2>
+
+				<div class="pairing-guide">
+					<h3>📡 조종기 ↔ 수신기 바인딩</h3>
+
+					<div class="step-by-step">
+						<div class="step">
+							<div class="step-number">1</div>
+							<h4>조종기 설정</h4>
+							<ul>
+								<li>조종기 전원 ON</li>
+								<li>Model → [새 모델] 생성</li>
+								<li>RF 프로토콜 선택 (FrSky D16, ExpressLRS 등)</li>
+								<li>Region: EU LBT (한국 기준)</li>
+							</ul>
+						</div>
+
+						<div class="step">
+							<div class="step-number">2</div>
+							<h4>수신기 바인딩 모드</h4>
+							<ul>
+								<li>드론 전원 OFF 상태</li>
+								<li>수신기의 BIND 버튼 누르면서 드론 전원 ON</li>
+								<li>수신기 LED가 빠르게 깜빡임 → 바인딩 모드</li>
+							</ul>
+						</div>
+
+						<div class="step">
+							<div class="step-number">3</div>
+							<h4>조종기에서 바인딩 실행</h4>
+							<ul>
+								<li>조종기: Model → Bind → [실행]</li>
+								<li>조종기가 바인딩 신호 송출</li>
+								<li>수신기 LED가 고정 점등되면 성공</li>
+							</ul>
+						</div>
+
+						<div class="step">
+							<div class="step-number">4</div>
+							<h4>연결 확인</h4>
+							<ul>
+								<li>조종기 스틱 조작</li>
+								<li>수신기 LED 상태 확인</li>
+								<li>Arduino 시리얼 모니터로 SBUS 데이터 확인</li>
+								<li>모터 테스트 (프로펠러 제거 상태)</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+
+				<div class="pairing-guide">
+					<h3>📹 VTX ↔ 고글 바인딩</h3>
+
+					<div class="step-by-step">
+						<div class="step">
+							<div class="step-number">1</div>
+							<h4>VTX 설정</h4>
+							<ul>
+								<li>드론 전원 ON</li>
+								<li>VTX가 자동으로 송신 시작</li>
+								<li>기본 채널: Race1~Race8 중 하나</li>
+								<li>전력: 25mW (기본값)</li>
+							</ul>
+						</div>
+
+						<div class="step">
+							<div class="step-number">2</div>
+							<h4>고글 스캔</h4>
+							<ul>
+								<li>고글 전원 ON</li>
+								<li>Auto Scan 실행</li>
+								<li>5.8GHz 대역 전체 스캔</li>
+								<li>신호 감지 시 자동 선택</li>
+							</ul>
+						</div>
+
+						<div class="step">
+							<div class="step-number">3</div>
+							<h4>HD 링크 설정</h4>
+							<ul>
+								<li>고글에서 VTX 감지</li>
+								<li>HD Link 메뉴에서 바인딩</li>
+								<li>VTX와 고글 ID 매칭</li>
+								<li>1080p60 모드 설정</li>
+							</ul>
+						</div>
+
+						<div class="step">
+							<div class="step-number">4</div>
+							<h4>영상 확인</h4>
+							<ul>
+								<li>카메라 영상이 고글에 표시</li>
+								<li>OSD 정보 오버레이</li>
+								<li>지연시간 체크 (~25ms)</li>
+								<li>녹화 기능 테스트</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- 프로토콜 상세 -->
+			<div class="section">
+				<h2 class="section-title">🔧 통신 프로토콜 상세</h2>
+
+				<div class="grid-layout">
+					<!-- SBUS 프로토콜 -->
+					<div class="component-card">
+						<div class="component-header">
+							SBUS 프로토콜
+						</div>
+						<div class="component-content">
+							<div class="protocol-box">
+								<h4>📋 SBUS 데이터 구조</h4>
+								<ul>
+									<li><strong>프레임 크기:</strong> 25바이트</li>
+									<li><strong>헤더:</strong> 0x0F</li>
+									<li><strong>채널 데이터:</strong> 16채널 × 11비트</li>
+									<li><strong>플래그:</strong> Failsafe, Frame Lost</li>
+									<li><strong>엔더:</strong> 0x00</li>
+								</ul>
+							</div>
+
+							<div class="signal-flow">
+								0x0F | CH1-16 데이터 | 플래그 | 0x00
+								| 22바이트 | 1바이트 |
+								헤더 엔더
+							</div>
+
+							<div class="frequency-info">
+								<strong>⚙️ Arduino 설정</strong>
+								<pre>Serial2.begin(100000, SERIAL_8E2, 4, -1, true);</pre>
+								<ul>
+									<li>100000 bps</li>
+									<li>8비트, Even 패리티, 2 정지비트</li>
+									<li>신호 반전 필요 (true)</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+
+					<!-- MSP 프로토콜 -->
+					<div class="component-card">
+						<div class="component-header">
+							MSP 프로토콜
+						</div>
+						<div class="component-content">
+							<div class="protocol-box">
+								<h4>📋 MSP 메시지 구조</h4>
+								<ul>
+									<li><strong>헤더:</strong> $M< 또는 $M>
+									</li>
+									<li><strong>크기:</strong> 데이터 길이</li>
+									<li><strong>명령:</strong> MSP_ATTITUDE 등</li>
+									<li><strong>데이터:</strong> 센서 값</li>
+									<li><strong>체크섬:</strong> XOR 검증</li>
+								</ul>
+							</div>
+
+							<div class="signal-flow">
+								$M< | 길이 | 명령 | 데이터 | 체크섬 </div>
+
+									<div class="frequency-info">
+										<strong>📊 주요 MSP 메시지</strong>
+										<ul>
+											<li><strong>MSP_ATTITUDE:</strong> Roll/Pitch/Yaw</li>
+											<li><strong>MSP_ANALOG:</strong> 배터리 전압</li>
+											<li><strong>MSP_RAW_GPS:</strong> GPS 정보</li>
+											<li><strong>MSP_STATUS:</strong> 시스템 상태</li>
+										</ul>
+									</div>
+							</div>
+						</div>
+
+						<!-- Avatar HD 프로토콜 -->
+						<div class="component-card">
+							<div class="component-header">
+								Avatar HD 프로토콜
+							</div>
+							<div class="component-content">
+								<div class="protocol-box">
+									<h4>📋 Avatar HD 통신 구조</h4>
+									<ul>
+										<li><strong>영상 코덱:</strong> H.265 (HEVC)</li>
+										<li><strong>해상도:</strong> 1080p @ 60fps</li>
+										<li><strong>비트레이트:</strong> 10-50 Mbps (적응형)</li>
+										<li><strong>지연시간:</strong> 25-40ms (글래스 투 글래스)</li>
+										<li><strong>주파수:</strong> 5.8GHz ISM 대역</li>
+										<li><strong>채널:</strong> 8개 채널 (Race1-8)</li>
+									</ul>
+								</div>
+
+								<div class="signal-flow">
+									카메라 센서 (IMX708)
+									↓
+									ISP (이미지 신호 처리)
+									↓
+									H.265 하드웨어 인코더
+									↓
+									RF 모듈 (5.8GHz)
+									↓
+									안테나 송출
+									↓
+									고글 수신 안테나
+									↓
+									RF 복조 및 디코딩
+									↓
+									디스플레이 출력
+								</div>
+
+								<div class="frequency-info">
+									<strong>📺 영상 품질 모드</strong>
+									<ul>
+										<li><strong>고화질:</strong> 1080p60 @ 25Mbps</li>
+										<li><strong>표준:</strong> 1080p30 @ 15Mbps</li>
+										<li><strong>저지연:</strong> 720p120 @ 20Mbps</li>
+										<li><strong>장거리:</strong> 720p60 @ 8Mbps</li>
+									</ul>
+								</div>
+
+								<div class="protocol-box">
+									<h4>🔧 Avatar HD V2 설정 명령어</h4>
+									<div class="signal-flow">
+										AT+POWER=2 // 출력 레벨 (0=25mW, 1=200mW, 2=800mW)
+										AT+FREQ=5800 // 주파수 설정 (MHz)
+										AT+CHAN=1 // 채널 번호 (1-8)
+										AT+BITRATE=25 // 비트레이트 (Mbps)
+										AT+MODE=0 // 화질 모드 (0=고화질, 1=저지연)
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- 주파수 대역 상세 -->
+				<div class="section">
+					<h2 class="section-title">📶 주파수 대역 및 채널 구조</h2>
+
+					<div class="grid-layout">
+						<div class="component-card">
+							<div class="component-header" style="background: #27ae60;">
+								✅ 2.4GHz ISM 대역 (합법)
+							</div>
+							<div class="component-content">
+								<h4>📡 2.4GHz 상세 스펙</h4>
+								<ul>
+									<li><strong>주파수 범위:</strong> 2400-2483.5 MHz</li>
+									<li><strong>채널 수:</strong> 79개 (1MHz 간격)</li>
+									<li><strong>최대 출력:</strong> 100mW (20dBm)</li>
+									<li><strong>변조 방식:</strong> FHSS, DSSS</li>
+									<li><strong>허가:</strong> 자유 사용 (KC 인증)</li>
+								</ul>
+
+								<div class="frequency-info">
+									<strong>🎮 2.4GHz 프로토콜 종류</strong>
+									<ul>
+										<li><strong>FrSky D16:</strong> 16채널, ACCST</li>
+										<li><strong>ExpressLRS:</strong> 1000Hz, 오픈소스</li>
+										<li><strong>Crossfire:</strong> 원거리, 150Hz</li>
+										<li><strong>FlySky AFHDS:</strong> 저가형</li>
+									</ul>
+								</div>
+
+								<div class="protocol-box">
+									<h4>📊 2.4GHz 채널 할당</h4>
+									<div class="signal-flow">
+										Ch 1: 2412 MHz Ch 6: 2437 MHz Ch 11: 2462 MHz
+										Ch 2: 2417 MHz Ch 7: 2442 MHz Ch 12: 2467 MHz
+										Ch 3: 2422 MHz Ch 8: 2447 MHz Ch 13: 2472 MHz
+										Ch 4: 2427 MHz Ch 9: 2452 MHz Ch 14: 2484 MHz
+										Ch 5: 2432 MHz Ch 10: 2457 MHz (일본만)
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="component-card">
+							<div class="component-header" style="background: #e74c3c;">
+								❌ 5.8GHz ISM 대역 (한국 불법)
+							</div>
+							<div class="component-content">
+								<h4>⚠️ 5.8GHz 상세 스펙</h4>
+								<ul>
+									<li><strong>주파수 범위:</strong> 5725-5875 MHz</li>
+									<li><strong>채널 수:</strong> 40개 (Race, Band A-E)</li>
+									<li><strong>출력:</strong> 25mW-2W</li>
+									<li><strong>변조:</strong> FM, 디지털</li>
+									<li><strong>한국 상태:</strong> 전파법 위반</li>
+								</ul>
+
+								<div class="frequency-info">
+									<strong>📺 5.8GHz 채널 구조</strong>
+									<ul>
+										<li><strong>Race Band:</strong> R1-R8 (5658-5917MHz)</li>
+										<li><strong>Band A:</strong> A1-A8 (5865-5945MHz)</li>
+										<li><strong>Band B:</strong> B1-B8 (5733-5813MHz)</li>
+										<li><strong>Band E:</strong> E1-E8 (5705-5885MHz)</li>
+									</ul>
+								</div>
+
+								<div class="warning-box">
+									<h4>🚨 한국 전파법 위반 사항</h4>
+									<ul>
+										<li><strong>벌금:</strong> 최대 300만원</li>
+										<li><strong>몰수:</strong> 장비 압수 가능</li>
+										<li><strong>간섭:</strong> 기상레이더 방해</li>
+										<li><strong>탐지:</strong> 전파감시소 자동 탐지</li>
+									</ul>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="info-box">
+						<h3>🇰🇷 한국에서의 합법적 FPV 대안</h3>
+						<div class="grid-layout">
+							<div class="component-card">
+								<div class="component-header" style="background: #3498db;">
+									📱 2.4GHz 아날로그 FPV
+								</div>
+								<div class="component-content">
+									<h4>합법적 영상 전송</h4>
+									<ul>
+										<li><strong>VTX:</strong> 2.4GHz 아날로그 송신기</li>
+										<li><strong>카메라:</strong> NTSC/PAL 아날로그</li>
+										<li><strong>고글:</strong> 2.4GHz 수신 모듈</li>
+										<li><strong>화질:</strong> 480i (SD급)</li>
+										<li><strong>지연:</strong> ~40-60ms</li>
+									</ul>
+
+									<div class="frequency-info">
+										<strong>추천 제품</strong>
+										<ul>
+											<li>Eachine TX02 (2.4GHz VTX)</li>
+											<li>Fatshark 2.4GHz 모듈</li>
+											<li>ImmersionRC 2.4GHz 시스템</li>
+										</ul>
+									</div>
+								</div>
+							</div>
+
+							<div class="component-card">
+								<div class="component-header" style="background: #9b59b6;">
+									📋 실험국 신고
+								</div>
+								<div class="component-content">
+									<h4>합법적 5.8GHz 사용법</h4>
+									<ul>
+										<li><strong>신고처:</strong> 방송통신위원회</li>
+										<li><strong>용도:</strong> 연구/실험 목적</li>
+										<li><strong>비용:</strong> 신고비 약 10만원</li>
+										<li><strong>기간:</strong> 1년 (갱신 가능)</li>
+										<li><strong>제한:</strong> 지정된 장소만</li>
+									</ul>
+
+									<div class="frequency-info">
+										<strong>신고 절차</strong>
+										<ol>
+											<li>실험계획서 작성</li>
+											<li>장비 목록 제출</li>
+											<li>전파 간섭 분석</li>
+											<li>승인 후 사용</li>
+										</ol>
+									</div>
+								</div>
+							</div>
+
+							<div class="component-card">
+								<div class="component-header" style="background: #e67e22;">
+									🏠 실내 비행
+								</div>
+								<div class="component-content">
+									<h4>사설 공간 활용</h4>
+									<ul>
+										<li><strong>장소:</strong> 개인 소유 건물</li>
+										<li><strong>차폐:</strong> 금속 구조물로 RF 차단</li>
+										<li><strong>출력:</strong> 최소 전력 (25mW)</li>
+										<li><strong>주의:</strong> 창문 통한 누설 방지</li>
+										<li><strong>시간:</strong> 단시간 테스트만</li>
+									</ul>
+
+									<div class="warning-box">
+										<strong>⚠️ 실내 사용 주의사항</strong>
+										<ul>
+											<li>완전한 차폐 불가능</li>
+											<li>이웃 신고 위험</li>
+											<li>법적 보호 없음</li>
+											<li>자기 책임 하에</li>
+										</ul>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Avatar HD 상세 설정 -->
+				<div class="section">
+					<h2 class="section-title">🔧 Avatar HD V2 상세 설정 가이드</h2>
+
+					<div class="step-by-step">
+						<h3>⚙️ 초기 설정 과정</h3>
+
+						<div class="step">
+							<div class="step-number">1</div>
+							<h4>하드웨어 연결</h4>
+							<ul>
+								<li><strong>전원:</strong> 3.3V-5V 입력 (Arduino 3.3V 권장)</li>
+								<li><strong>UART:</strong> TX→D17, RX→D16 (115200bps)</li>
+								<li><strong>카메라:</strong> 전용 리본 케이블 연결</li>
+								<li><strong>안테나:</strong> MMCX 커넥터 (LHCP 권장)</li>
+							</ul>
+						</div>
+
+						<div class="step">
+							<div class="step-number">2</div>
+							<h4>펌웨어 설정</h4>
+							<ul>
+								<li><strong>최신 펌웨어:</strong> Walksnail 공식 사이트 다운로드</li>
+								<li><strong>업그레이드:</strong> micro-SD 카드 이용</li>
+								<li><strong>설정 초기화:</strong> 팩토리 리셋 수행</li>
+								<li><strong>지역 설정:</strong> CE (유럽) 또는 FCC (미국)</li>
+							</ul>
+						</div>
+
+						<div class="step">
+							<div class="step-number">3</div>
+							<h4>채널 및 전력 설정</h4>
+							<div class="protocol-box">
+								<h4>AT 명령어로 설정</h4>
+								<div class="signal-flow">
+									// Arduino에서 VTX 설정
+									void setupVTX() {
+									Serial1.begin(115200);
+									delay(1000);
+
+									// 채널 설정 (Race1 = 5658MHz)
+									Serial1.println("AT+FREQ=5658");
+									delay(100);
+
+									// 출력 전력 (0=25mW, 1=200mW, 2=800mW)
+									Serial1.println("AT+POWER=0"); // 25mW로 시작
+									delay(100);
+
+									// 화질 모드 (0=고화질, 1=저지연)
+									Serial1.println("AT+MODE=0");
+									delay(100);
+
+									// 비트레이트 설정
+									Serial1.println("AT+BITRATE=15");
+									delay(100);
+
+									Serial.println("VTX 설정 완료");
+									}
+								</div>
+							</div>
+						</div>
+
+						<div class="step">
+							<div class="step-number">4</div>
+							<h4>OSD 설정</h4>
+							<ul>
+								<li><strong>MSP 연결:</strong> Arduino → VTX UART</li>
+								<li><strong>배터리 전압:</strong> 좌상단 표시</li>
+								<li><strong>비행 시간:</strong> 우상단 표시</li>
+								<li><strong>인공수평선:</strong> 중앙 표시</li>
+							</ul>
+
+							<div class="protocol-box">
+								<h4>MSP OSD 데이터 전송</h4>
+								<div class="signal-flow">
+									void sendOSDData() {
+									// 배터리 전압 전송
+									sendMSPBattery(batteryVoltage);
+									delay(10);
+
+									// 자세 정보 전송
+									sendMSPAttitude(roll, pitch, yaw);
+									delay(10);
+
+									// GPS 정보 전송 (더미)
+									sendMSPGPS();
+									delay(10);
+									}
+
+									// 50Hz로 호출
+									void loop() {
+									static unsigned long lastOSD = 0;
+									if (millis() - lastOSD > 20) {
+									sendOSDData();
+									lastOSD = millis();
+									}
+									}
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- 고글 연결 설정 -->
+				<div class="section">
+					<h2 class="section-title">🥽 Walksnail Goggles X 연결 설정</h2>
+
+					<div class="grid-layout">
+						<div class="component-card">
+							<div class="component-header">
+								🔍 채널 스캔 및 바인딩
+							</div>
+							<div class="component-content">
+								<h4>자동 스캔 과정</h4>
+								<ol>
+									<li><strong>고글 전원 ON</strong></li>
+									<li><strong>VTX 전원 ON</strong> (드론)</li>
+									<li><strong>Settings → Scanner</strong></li>
+									<li><strong>Auto Scan 실행</strong></li>
+									<li><strong>신호 감지 시 자동 선택</strong></li>
+								</ol>
+
+								<div class="frequency-info">
+									<strong>📶 신호 품질 확인</strong>
+									<ul>
+										<li><strong>RSSI:</strong> -60dBm 이상 권장</li>
+										<li><strong>SNR:</strong> 15dB 이상 양호</li>
+										<li><strong>패킷 로스:</strong> 1% 이하</li>
+										<li><strong>지연시간:</strong> 25-35ms 정상</li>
+									</ul>
+								</div>
+							</div>
+						</div>
+
+						<div class="component-card">
+							<div class="component-header">
+								⚙️ 화질 및 디스플레이 설정
+							</div>
+							<div class="component-content">
+								<h4>최적 화질 설정</h4>
+								<ul>
+									<li><strong>해상도:</strong> 1080p60 (기본)</li>
+									<li><strong>FOV:</strong> 120° (몰입감)</li>
+									<li><strong>밝기:</strong> 80% (배터리 절약)</li>
+									<li><strong>대비:</strong> 자동 조절</li>
+									<li><strong>채도:</strong> +10% (선명도)</li>
+								</ul>
+
+								<div class="frequency-info">
+									<strong>🔋 배터리 최적화</strong>
+									<ul>
+										<li><strong>절전 모드:</strong> 5분 후 자동</li>
+										<li><strong>화면 밝기:</strong> 환경에 따라 조절</li>
+										<li><strong>DVR 녹화:</strong> 필요시만 활성화</li>
+										<li><strong>Wi-Fi:</strong> 사용 안할 때 끄기</li>
+									</ul>
+								</div>
+							</div>
+						</div>
+
+						<div class="component-card">
+							<div class="component-header">
+								📊 OSD 레이아웃 설정
+							</div>
+							<div class="component-content">
+								<h4>추천 OSD 배치</h4>
+								<div class="signal-flow">
+									┌─────────────────────────────┐
+									│ 4.1V ARM ⏰ 02:34 │ ← 상단
+									│ │
+									│ ═══╪═══ │ ← 인공수평선
+									│ │ │
+									│ │ │
+									│ │
+									│ STAB 📡 -45dBm 🛰️ 12 │ ← 하단
+									└─────────────────────────────┘
+								</div>
+
+								<div class="frequency-info">
+									<strong>📋 OSD 요소 설명</strong>
+									<ul>
+										<li><strong>좌상단:</strong> 배터리 전압, ARM 상태</li>
+										<li><strong>우상단:</strong> 비행 시간</li>
+										<li><strong>중앙:</strong> 인공 수평선</li>
+										<li><strong>하단:</strong> 비행모드, RSSI, GPS</li>
+									</ul>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- 성능 최적화 -->
+				<div class="section">
+					<h2 class="section-title">⚡ Avatar HD 성능 최적화</h2>
+
+					<div class="troubleshooting">
+						<h3>🎯 지연시간 최소화</h3>
+
+						<div class="grid-layout">
+							<div class="component-card">
+								<div class="component-header" style="background: #e74c3c;">
+									📱 VTX 설정 최적화
+								</div>
+								<div class="component-content">
+									<ul>
+										<li><strong>저지연 모드:</strong> AT+MODE=1</li>
+										<li><strong>해상도 낮추기:</strong> 720p120 사용</li>
+										<li><strong>비트레이트 조절:</strong> 거리에 따라</li>
+										<li><strong>GOP 설정:</strong> 짧은 I-frame 간격</li>
+									</ul>
+
+									<div class="protocol-box">
+										<h4>저지연 설정 예시</h4>
+										<div class="signal-flow">
+											AT+MODE=1 // 저지연 모드
+											AT+RESOLUTION=1 // 720p
+											AT+FPS=120 // 120fps
+											AT+BITRATE=20 // 20Mbps
+											AT+GOP=30 // GOP 30
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<div class="component-card">
+								<div class="component-header" style="background: #f39c12;">
+									🥽 고글 설정 최적화
+								</div>
+								<div class="component-content">
+									<ul>
+										<li><strong>디코딩 모드:</strong> 하드웨어 가속</li>
+										<li><strong>버퍼링 최소화:</strong> 낮은 버퍼</li>
+										<li><strong>후처리 끄기:</strong> 추가 지연 방지</li>
+										<li><strong>동기화 모드:</strong> V-Sync 끄기</li>
+									</ul>
+
+									<div class="frequency-info">
+										<strong>🔧 고급 설정</strong>
+										<ul>
+											<li>Decode Mode: Hardware</li>
+											<li>Buffer Size: Minimum</li>
+											<li>Post Processing: Off</li>
+											<li>Display Sync: Disabled</li>
+										</ul>
+									</div>
+								</div>
+							</div>
+
+							<div class="component-card">
+								<div class="component-header" style="background: #27ae60;">
+									📡 RF 성능 향상
+								</div>
+								<div class="component-content">
+									<ul>
+										<li><strong>안테나 업그레이드:</strong> 고품질 LHCP</li>
+										<li><strong>다이버시티:</strong> 이중 안테나</li>
+										<li><strong>간섭 회피:</strong> 깨끗한 채널</li>
+										<li><strong>전력 최적화:</strong> 거리별 조절</li>
+									</ul>
+
+									<div class="frequency-info">
+										<strong>📡 추천 안테나</strong>
+										<ul>
+											<li><strong>VTX:</strong> LHCP 패치 안테나</li>
+											<li><strong>고글:</strong> LHCP 패치 + 옴니</li>
+											<li><strong>게인:</strong> 8-14dBi</li>
+											<li><strong>빔폭:</strong> 60-120도</li>
+										</ul>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>

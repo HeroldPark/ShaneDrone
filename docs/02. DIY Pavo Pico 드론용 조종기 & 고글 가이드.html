@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>DIY 드론용 조종기 & 고글 추천</title>
+	<style>
+		body {
+			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+			margin: 0;
+			padding: 20px;
+			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+			color: #333;
+		}
+
+		.container {
+			max-width: 1400px;
+			margin: 0 auto;
+			background: white;
+			border-radius: 20px;
+			box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+			overflow: hidden;
+		}
+
+		.header {
+			background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+			color: white;
+			padding: 30px;
+			text-align: center;
+		}
+
+		.header h1 {
+			margin: 0;
+			font-size: 2.5em;
+			font-weight: 300;
+		}
+
+		.content {
+			padding: 40px;
+		}
+
+		.section {
+			margin-bottom: 50px;
+		}
+
+		.section-title {
+			color: #2c3e50;
+			font-size: 1.8em;
+			margin-bottom: 20px;
+			padding-bottom: 10px;
+			border-bottom: 3px solid #3498db;
+			display: flex;
+			align-items: center;
+			gap: 10px;
+		}
+
+		.product-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+			gap: 30px;
+			margin: 30px 0;
+		}
+
+		.product-card {
+			background: white;
+			border-radius: 15px;
+			box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+			overflow: hidden;
+			border: 2px solid #ecf0f1;
+			transition: all 0.3s ease;
+			position: relative;
+		}
+
+		.product-card:hover {
+			transform: translateY(-5px);
+			box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+			border-color: #3498db;
+		}
+
+		.product-image {
+			height: 200px;
+			background: linear-gradient(135deg, #667eea, #764ba2);
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			color: white;
+			font-size: 2em;
+			font-weight: bold;
+		}
+
+		.product-info {
+			padding: 20px;
+		}
+
+		.product-title {
+			font-size: 1.3em;
+			font-weight: bold;
+			color: #2c3e50;
+			margin-bottom: 10px;
+		}
+
+		.product-price {
+			font-size: 1.5em;
+			color: #e74c3c;
+			font-weight: bold;
+			margin-bottom: 15px;
+		}
+
+		.product-features {
+			list-style: none;
+			padding: 0;
+			margin-bottom: 15px;
+		}
+
+		.product-features li {
+			padding: 5px 0;
+			border-bottom: 1px solid #ecf0f1;
+			font-size: 0.9em;
+		}
+
+		.product-features li:last-child {
+			border-bottom: none;
+		}
+
+		.compatibility {
+			background: #e8f5e8;
+			padding: 10px;
+			border-radius: 8px;
+			margin: 15px 0;
+			border-left: 4px solid #27ae60;
+		}
+
+		.compatibility-title {
+			font-weight: bold;
+			color: #27ae60;
+			margin-bottom: 5px;
+		}
+
+		.pros-cons {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 15px;
+			margin: 15px 0;
+		}
+
+		.pros,
+		.cons {
+			padding: 15px;
+			border-radius: 8px;
+		}
+
+		.pros {
+			background: #e8f5e8;
+			border-left: 4px solid #27ae60;
+		}
+
+		.cons {
+			background: #fdf2f2;
+			border-left: 4px solid #e74c3c;
+		}
+
+		.pros h4,
+		.cons h4 {
+			margin-top: 0;
+			color: #2c3e50;
+		}
+
+		.pros ul,
+		.cons ul {
+			margin: 0;
+			padding-left: 20px;
+			font-size: 0.9em;
+		}
+
+		.recommendation-badge {
+			position: absolute;
+			top: 15px;
+			right: 15px;
+			background: #f39c12;
+			color: white;
+			padding: 5px 10px;
+			border-radius: 15px;
+			font-size: 0.8em;
+			font-weight: bold;
+		}
+
+		.best-badge {
+			background: #e74c3c;
+		}
+
+		.budget-badge {
+			background: #27ae60;
+		}
+
+		.premium-badge {
+			background: #8e44ad;
+		}
+
+		.comparison-table {
+			width: 100%;
+			border-collapse: collapse;
+			margin: 20px 0;
+			background: white;
+			border-radius: 10px;
+			overflow: hidden;
+			box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+		}
+
+		.comparison-table th {
+			background: #3498db;
+			color: white;
+			padding: 15px;
+			font-weight: 600;
+		}
+
+		.comparison-table td {
+			padding: 12px 15px;
+			border-bottom: 1px solid #ecf0f1;
+			text-align: center;
+		}
+
+		.comparison-table tr:nth-child(even) {
+			background: #f8f9fa;
+		}
+
+		.comparison-table tr:hover {
+			background: #e3f2fd;
+		}
+
+		.feature-icon {
+			width: 20px;
+			height: 20px;
+			background: #27ae60;
+			border-radius: 50%;
+			display: inline-block;
+			margin-right: 8px;
+			position: relative;
+		}
+
+		.feature-icon::before {
+			content: '✓';
+			color: white;
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			font-size: 12px;
+			font-weight: bold;
+		}
+
+		.info-box {
+			background: linear-gradient(135deg, #74b9ff, #0984e3);
+			color: white;
+			padding: 20px;
+			border-radius: 10px;
+			margin: 20px 0;
+			border-left: 5px solid #2d3436;
+		}
+
+		.warning-box {
+			background: linear-gradient(135deg, #ff7675, #fd79a8);
+			color: white;
+			padding: 20px;
+			border-radius: 10px;
+			margin: 20px 0;
+			border-left: 5px solid #d63031;
+		}
+
+		.setup-guide {
+			background: #f8f9fa;
+			padding: 20px;
+			border-radius: 10px;
+			margin: 20px 0;
+			border: 2px solid #dee2e6;
+		}
+
+		.price-range {
+			display: inline-block;
+			padding: 4px 8px;
+			border-radius: 20px;
+			font-size: 0.8em;
+			font-weight: bold;
+			margin-left: 10px;
+		}
+
+		.price-budget {
+			background: #27ae60;
+			color: white;
+		}
+
+		.price-mid {
+			background: #f39c12;
+			color: white;
+		}
+
+		.price-premium {
+			background: #e74c3c;
+			color: white;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="container">
+		<div class="header">
+			<h1>🎮 DIY Pavo Pico 드론용 조종기 & 고글 가이드</h1>
+			<p>SBUS 호환 조종기와 Walksnail Avatar HD V2 고글 추천</p>
+		</div>
+
+		<div class="content">
+			<!-- 조종기 추천 -->
+			<div class="section">
+				<h2 class="section-title">🎮 SBUS 조종기 추천</h2>
+
+				<div class="product-grid">
+					<!-- RadioMaster TX16S -->
+					<div class="product-card">
+						<div class="recommendation-badge best-badge">베스트 초이스</div>
+						<div class="product-image">📡 TX16S</div>
+						<div class="product-info">
+							<div class="product-title">RadioMaster TX16S Mark II</div>
+							<div class="product-price">$199 <span class="price-range price-mid">중급</span></div>
+
+							<ul class="product-features">
+								<li><span class="feature-icon"></span>OpenTX / EdgeTX 펌웨어</li>
+								<li><span class="feature-icon"></span>2.4GHz Multi-protocol</li>
+								<li><span class="feature-icon"></span>16채널 SBUS 출력</li>
+								<li><span class="feature-icon"></span>4.3인치 컬러 LCD</li>
+								<li><span class="feature-icon"></span>홀 센서 짐벌</li>
+								<li><span class="feature-icon"></span>내장 배터리</li>
+							</ul>
+
+							<div class="compatibility">
+								<div class="compatibility-title">🔌 호환성</div>
+								DIY 드론과 완벽 호환, SBUS 직접 출력 지원
+							</div>
+
+							<div class="pros-cons">
+								<div class="pros">
+									<h4>👍 장점</h4>
+									<ul>
+										<li>뛰어난 가성비</li>
+										<li>다양한 프로토콜 지원</li>
+										<li>커스터마이징 자유도</li>
+										<li>견고한 빌드 품질</li>
+									</ul>
+								</div>
+								<div class="cons">
+									<h4>👎 단점</h4>
+									<ul>
+										<li>초기 설정 복잡</li>
+										<li>무게가 다소 무거움</li>
+										<li>매뉴얼 학습 필요</li>
+									</ul>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- FrSky Taranis X9D Plus -->
+					<div class="product-card">
+						<div class="recommendation-badge">검증된 선택</div>
+						<div class="product-image">📡 X9D+</div>
+						<div class="product-info">
+							<div class="product-title">FrSky Taranis X9D Plus 2019</div>
+							<div class="product-price">$249 <span class="price-range price-mid">중급</span></div>
+
+							<ul class="product-features">
+								<li><span class="feature-icon"></span>OpenTX 펌웨어</li>
+								<li><span class="feature-icon"></span>ACCESS/ACCST 프로토콜</li>
+								<li><span class="feature-icon"></span>16채널 SBUS</li>
+								<li><span class="feature-icon"></span>2.4인치 LCD</li>
+								<li><span class="feature-icon"></span>확장 모듈 지원</li>
+								<li><span class="feature-icon"></span>음성 알림</li>
+							</ul>
+
+							<div class="compatibility">
+								<div class="compatibility-title">🔌 호환성</div>
+								FrSky 수신기와 완벽 호환, SBUS 안정성 우수
+							</div>
+
+							<div class="pros-cons">
+								<div class="pros">
+									<h4>👍 장점</h4>
+									<ul>
+										<li>검증된 안정성</li>
+										<li>풍부한 커뮤니티</li>
+										<li>우수한 RF 성능</li>
+										<li>정밀한 조작감</li>
+									</ul>
+								</div>
+								<div class="cons">
+									<h4>👎 단점</h4>
+									<ul>
+										<li>높은 가격</li>
+										<li>배터리 별도</li>
+										<li>무게감</li>
+									</ul>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- BETAFPV LiteRadio 3 -->
+					<div class="product-card">
+						<div class="recommendation-badge budget-badge">가성비 킹</div>
+						<div class="product-image">📱 LR3</div>
+						<div class="product-info">
+							<div class="product-title">BETAFPV LiteRadio 3</div>
+							<div class="product-price">$89 <span class="price-range price-budget">예산형</span></div>
+
+							<ul class="product-features">
+								<li><span class="feature-icon"></span>EdgeTX 펌웨어</li>
+								<li><span class="feature-icon"></span>2.4GHz ELRS/FrSky</li>
+								<li><span class="feature-icon"></span>SBUS 출력</li>
+								<li><span class="feature-icon"></span>컴팩트 사이즈</li>
+								<li><span class="feature-icon"></span>USB-C 충전</li>
+								<li><span class="feature-icon"></span>경량 디자인</li>
+							</ul>
+
+							<div class="compatibility">
+								<div class="compatibility-title">🔌 호환성</div>
+								마이크로 드론에 최적화, SBUS 완벽 지원
+							</div>
+
+							<div class="pros-cons">
+								<div class="pros">
+									<h4>👍 장점</h4>
+									<ul>
+										<li>매우 저렴한 가격</li>
+										<li>휴대성 우수</li>
+										<li>설정 간단</li>
+										<li>초보자 친화적</li>
+									</ul>
+								</div>
+								<div class="cons">
+									<h4>👎 단점</h4>
+									<ul>
+										<li>제한적인 기능</li>
+										<li>작은 화면</li>
+										<li>확장성 부족</li>
+									</ul>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Jumper T-Pro -->
+					<div class="product-card">
+						<div class="recommendation-badge premium-badge">프리미엄</div>
+						<div class="product-image">📡 T-Pro</div>
+						<div class="product-info">
+							<div class="product-title">Jumper T-Pro V2</div>
+							<div class="product-price">$329 <span class="price-range price-premium">고급</span></div>
+
+							<ul class="product-features">
+								<li><span class="feature-icon"></span>EdgeTX 펌웨어</li>
+								<li><span class="feature-icon"></span>Multi-protocol 내장</li>
+								<li><span class="feature-icon"></span>32채널 지원</li>
+								<li><span class="feature-icon"></span>4.3인치 터치스크린</li>
+								<li><span class="feature-icon"></span>CNC 알루미늄 케이스</li>
+								<li><span class="feature-icon"></span>무선 트레이너</li>
+							</ul>
+
+							<div class="compatibility">
+								<div class="compatibility-title">🔌 호환성</div>
+								모든 프로토콜 지원, 프로용 기능 완비
+							</div>
+
+							<div class="pros-cons">
+								<div class="pros">
+									<h4>👍 장점</h4>
+									<ul>
+										<li>프리미엄 품질</li>
+										<li>모든 기능 내장</li>
+										<li>뛰어난 조작감</li>
+										<li>미래 지향적</li>
+									</ul>
+								</div>
+								<div class="cons">
+									<h4>👎 단점</h4>
+									<ul>
+										<li>높은 가격</li>
+										<li>복잡한 메뉴</li>
+										<li>오버스펙 가능성</li>
+									</ul>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- 고글 추천 -->
+			<div class="section">
+				<h2 class="section-title">🥽 Walksnail Avatar HD 고글 추천</h2>
+
+				<div class="product-grid">
+					<!-- Walksnail Avatar HD V2 -->
+					<div class="product-card">
+						<div class="recommendation-badge best-badge">최적 매칭</div>
+						<div class="product-image">🥽 Avatar</div>
+						<div class="product-info">
+							<div class="product-title">Walksnail Avatar HD Goggles X</div>
+							<div class="product-price">$649 <span class="price-range price-premium">고급</span></div>
+
+							<ul class="product-features">
+								<li><span class="feature-icon"></span>1080p60 HD 화질</li>
+								<li><span class="feature-icon"></span>O3 Air Unit 호환</li>
+								<li><span class="feature-icon"></span>120° FOV</li>
+								<li><span class="feature-icon"></span>DVR 녹화 기능</li>
+								<li><span class="feature-icon"></span>HDMI 출력</li>
+								<li><span class="feature-icon"></span>안드로이드 OS</li>
+							</ul>
+
+							<div class="compatibility">
+								<div class="compatibility-title">🔌 호환성</div>
+								Walksnail Avatar HD V2 VTX와 완벽 호환
+							</div>
+
+							<div class="pros-cons">
+								<div class="pros">
+									<h4>👍 장점</h4>
+									<ul>
+										<li>뛰어난 HD 화질</li>
+										<li>낮은 지연시간</li>
+										<li>직관적인 UI</li>
+										<li>우수한 착용감</li>
+									</ul>
+								</div>
+								<div class="cons">
+									<h4>👎 단점</h4>
+									<ul>
+										<li>높은 가격</li>
+										<li>배터리 소모</li>
+										<li>크기가 큼</li>
+									</ul>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- DJI FPV Goggles V2 -->
+					<div class="product-card">
+						<div class="recommendation-badge">호환 가능</div>
+						<div class="product-image">🥽 DJI V2</div>
+						<div class="product-info">
+							<div class="product-title">DJI FPV Goggles V2</div>
+							<div class="product-price">$569 <span class="price-range price-premium">고급</span></div>
+
+							<ul class="product-features">
+								<li><span class="feature-icon"></span>1080p60 화질</li>
+								<li><span class="feature-icon"></span>O3 Air Unit 호환</li>
+								<li><span class="feature-icon"></span>150° FOV</li>
+								<li><span class="feature-icon"></span>MicroSD 녹화</li>
+								<li><span class="feature-icon"></span>Head Tracking</li>
+								<li><span class="feature-icon"></span>관중 모드</li>
+							</ul>
+
+							<div class="compatibility">
+								<div class="compatibility-title">🔌 호환성</div>
+								O3 Air Unit과 호환, HD 전송 가능
+							</div>
+
+							<div class="pros-cons">
+								<div class="pros">
+									<h4>👍 장점</h4>
+									<ul>
+										<li>검증된 안정성</li>
+										<li>우수한 화질</li>
+										<li>관중 모드</li>
+										<li>좋은 중고가</li>
+									</ul>
+								</div>
+								<div class="cons">
+									<h4>👎 단점</h4>
+									<ul>
+										<li>DJI 종속성</li>
+										<li>무거운 무게</li>
+										<li>제한적 호환성</li>
+									</ul>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Fatshark HDO2 -->
+					<div class="product-card">
+						<div class="recommendation-badge">아날로그 옵션</div>
+						<div class="product-image">🥽 HDO2</div>
+						<div class="product-info">
+							<div class="product-title">Fatshark HDO2</div>
+							<div class="product-price">$449 <span class="price-range price-mid">중급</span></div>
+
+							<ul class="product-features">
+								<li><span class="feature-icon"></span>OLED 디스플레이</li>
+								<li><span class="feature-icon"></span>960×720 해상도</li>
+								<li><span class="feature-icon"></span>모듈 교체 가능</li>
+								<li><span class="feature-icon"></span>DVR 기능</li>
+								<li><span class="feature-icon"></span>42° FOV</li>
+								<li><span class="feature-icon"></span>경량 설계</li>
+							</ul>
+
+							<div class="compatibility">
+								<div class="compatibility-title">🔌 호환성</div>
+								HD 모듈 추가 시 Avatar HD 호환 가능
+							</div>
+
+							<div class="pros-cons">
+								<div class="pros">
+									<h4>👍 장점</h4>
+									<ul>
+										<li>모듈 확장성</li>
+										<li>가벼운 무게</li>
+										<li>OLED 선명도</li>
+										<li>컴팩트 사이즈</li>
+									</ul>
+								</div>
+								<div class="cons">
+									<h4>👎 단점</h4>
+									<ul>
+										<li>기본은 아날로그</li>
+										<li>작은 FOV</li>
+										<li>추가 모듈 비용</li>
+									</ul>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- ORQA FPV.One -->
+					<div class="product-card">
+						<div class="recommendation-badge budget-badge">예산형</div>
+						<div class="product-image">🥽 ORQA</div>
+						<div class="product-info">
+							<div class="product-title">ORQA FPV.One Pilot</div>
+							<div class="product-price">$399 <span class="price-range price-mid">중급</span></div>
+
+							<ul class="product-features">
+								<li><span class="feature-icon"></span>OLED 디스플레이</li>
+								<li><span class="feature-icon"></span>1280×960 해상도</li>
+								<li><span class="feature-icon"></span>50° FOV</li>
+								<li><span class="feature-icon"></span>DVR 녹화</li>
+								<li><span class="feature-icon"></span>USB-C 충전</li>
+								<li><span class="feature-icon"></span>IPD 조절</li>
+							</ul>
+
+							<div class="compatibility">
+								<div class="compatibility-title">🔌 호환성</div>
+								아날로그 전용, HD 모듈 미지원
+							</div>
+
+							<div class="pros-cons">
+								<div class="pros">
+									<h4>👍 장점</h4>
+									<ul>
+										<li>뛰어난 OLED</li>
+										<li>편안한 착용감</li>
+										<li>합리적 가격</li>
+										<li>좋은 빌드 품질</li>
+									</ul>
+								</div>
+								<div class="cons">
+									<h4>👎 단점</h4>
+									<ul>
+										<li>아날로그 전용</li>
+										<li>HD 업그레이드 불가</li>
+										<li>제한적 호환성</li>
+									</ul>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- 비교표 -->
+			<div class="section">
+				<h2 class="section-title">📊 조종기 비교표</h2>
+
+				<table class="comparison-table">
+					<thead>
+						<tr>
+							<th>모델</th>
+							<th>가격</th>
+							<th>펌웨어</th>
+							<th>프로토콜</th>
+							<th>화면</th>
+							<th>배터리</th>
+							<th>무게</th>
+							<th>추천도</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td><strong>RadioMaster TX16S</strong></td>
+							<td>$199</td>
+							<td>EdgeTX</td>
+							<td>Multi</td>
+							<td>4.3" 컬러</td>
+							<td>내장</td>
+							<td>1.1kg</td>
+							<td>⭐⭐⭐⭐⭐</td>
+						</tr>
+						<tr>
+							<td><strong>FrSky X9D Plus</strong></td>
+							<td>$249</td>
+							<td>OpenTX</td>
+							<td>FrSky</td>
+							<td>2.4" 흑백</td>
+							<td>별도</td>
+							<td>1.3kg</td>
+							<td>⭐⭐⭐⭐</td>
+						</tr>
+						<tr>
+							<td><strong>BETAFPV LiteRadio 3</strong></td>
+							<td>$89</td>
+							<td>EdgeTX</td>
+							<td>ELRS/FrSky</td>
+							<td>작은 LCD</td>
+							<td>내장</td>
+							<td>0.4kg</td>
+							<td>⭐⭐⭐⭐</td>
+						</tr>
+						<tr>
+							<td><strong>Jumper T-Pro V2</strong></td>
+							<td>$329</td>
+							<td>EdgeTX</td>
+							<td>Multi</td>
+							<td>4.3" 터치</td>
+							<td>내장</td>
+							<td>1.2kg</td>
+							<td>⭐⭐⭐⭐⭐</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+
+			<!-- 고글 비교표 -->
+			<div class="section">
+				<h2 class="section-title">📊 FPV 고글 비교표</h2>
+
+				<table class="comparison-table">
+					<thead>
+						<tr>
+							<th>모델</th>
+							<th>가격</th>
+							<th>해상도</th>
+							<th>지연시간</th>
+							<th>FOV</th>
+							<th>Avatar HD</th>
+							<th>DVR</th>
+							<th>추천도</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td><strong>Walksnail Goggles X</strong></td>
+							<td>$649</td>
+							<td>1080p60</td>
+							<td>~25ms</td>
+							<td>120°</td>
+							<td>완벽</td>
+							<td>✓</td>
+							<td>⭐⭐⭐⭐⭐</td>
+						</tr>
+						<tr>
+							<td><strong>DJI FPV V2</strong></td>
+							<td>$569</td>
+							<td>1080p60</td>
+							<td>~28ms</td>
+							<td>150°</td>
+							<td>호환</td>
+							<td>✓</td>
+							<td>⭐⭐⭐⭐</td>
+						</tr>
+						<tr>
+							<td><strong>Fatshark HDO2</strong></td>
+							<td>$449</td>
+							<td>960×720</td>
+							<td>~35ms</td>
+							<td>42°</td>
+							<td>모듈필요</td>
+							<td>✓</td>
+							<td>⭐⭐⭐</td>
+						</tr>
+						<tr>
+							<td><strong>ORQA FPV.One</strong></td>
+							<td>$399</td>
+							<td>1280×960</td>
+							<td>아날로그</td>
+							<td>50°</td>
+							<td>불가</td>
+							<td>✓</td>
+							<td>⭐⭐</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+
+			<!-- 추천 조합 -->
+			<div class="section">
+				<h2 class="section-title">🎯 예산별 추천 조합</h2>
+
+				<div class="product-grid">
+					<!-- 예산형 -->
+					<div class="product-card">
+						<div class="recommendation-badge budget-badge">예산형</div>
+						<div class="product-image">💰 ~$600</div>
+						<div class="product-info">
+							<div class="product-title">입문자 추천 세트</div>
+							<div class="product-price">$588 총액</div>
+
+							<ul class="product-features">
+								<li><strong>조종기:</strong> BETAFPV LiteRadio 3 ($89)</li>
+								<li><strong>수신기:</strong> BETAFPV ExpressLRS RX ($25)</li>
+								<li><strong>고글:</strong> Fatshark HDO2 + Avatar HD 모듈 ($449 + $25)</li>
+							</ul>
+
+							<div class="compatibility">
+								<div class="compatibility-title">✅ 특징</div>
+								<ul>
+									<li>가장 경제적인 HD 시스템</li>
+									<li>설정이 간단함</li>
+									<li>휴대성 우수</li>
+									<li>추후 업그레이드 가능</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+
+					<!-- 중급형 -->
+					<div class="product-card">
+						<div class="recommendation-badge best-badge">베스트 밸런스</div>
+						<div class="product-image">⚖️ ~$900</div>
+						<div class="product-info">
+							<div class="product-title">균형잡힌 추천 세트</div>
+							<div class="product-price">$893 총액</div>
+
+							<ul class="product-features">
+								<li><strong>조종기:</strong> RadioMaster TX16S ($199)</li>
+								<li><strong>수신기:</strong> FrSky R9 Mini ($45)</li>
+								<li><strong>고글:</strong> Walksnail Goggles X ($649)</li>
+							</ul>
+
+							<div class="compatibility">
+								<div class="compatibility-title">✅ 특징</div>
+								<ul>
+									<li>최적의 가성비</li>
+									<li>모든 기능 완비</li>
+									<li>확장성 우수</li>
+									<li>장기간 사용 가능</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+
+					<!-- 프리미엄 -->
+					<div class="product-card">
+						<div class="recommendation-badge premium-badge">프리미엄</div>
+						<div class="product-image">👑 ~$1200</div>
+						<div class="product-info">
+							<div class="product-title">프로급 추천 세트</div>
+							<div class="product-price">$1,223 총액</div>
+
+							<ul class="product-features">
+								<li><strong>조종기:</strong> Jumper T-Pro V2 ($329)</li>
+								<li><strong>수신기:</strong> TBS Crossfire Nano RX ($45)</li>
+								<li><strong>고글:</strong> Walksnail Goggles X + 추가 배터리 ($649 + $200)</li>
+							</ul>
+
+							<div class="compatibility">
+								<div class="compatibility-title">✅ 특징</div>
+								<ul>
+									<li>최고급 품질</li>
+									<li>모든 기능 내장</li>
+									<li>프로급 성능</li>
+									<li>미래지향적</li>
+								</ul>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- 설정 가이드 -->
+			<div class="section">
+				<h2 class="section-title">⚙️ 조종기 설정 가이드</h2>
+
+				<div class="setup-guide">
+					<h3>🎮 RadioMaster TX16S 설정 단계</h3>
+
+					<h4>1. 기본 펌웨어 설정</h4>
+					<ul>
+						<li><strong>EdgeTX 업데이트</strong>: 최신 버전으로 업그레이드</li>
+						<li><strong>언어 설정</strong>: System → 언어 → 한국어</li>
+						<li><strong>RF 프로토콜</strong>: FrSky D16 또는 ExpressLRS 선택</li>
+					</ul>
+
+					<h4>2. 드론 모델 생성</h4>
+					<ul>
+						<li><strong>모델 추가</strong>: Model → [+] → "Pavo Pico"</li>
+						<li><strong>모델 타입</strong>: Airplane → Quadcopter</li>
+						<li><strong>RF 모듈</strong>: Internal → FrSky D16 (EU LBT)</li>
+					</ul>
+
+					<h4>3. 채널 매핑 설정</h4>
+					<div class="info-box">
+						<h4>📋 표준 채널 매핑</h4>
+						<ul>
+							<li><strong>CH1 (A)</strong>: Roll → 우측 스틱 좌우</li>
+							<li><strong>CH2 (E)</strong>: Pitch → 우측 스틱 상하</li>
+							<li><strong>CH3 (T)</strong>: Throttle → 좌측 스틱 상하</li>
+							<li><strong>CH4 (R)</strong>: Yaw → 좌측 스틱 좌우</li>
+							<li><strong>CH5 (SA)</strong>: ARM/DISARM → SA 스위치</li>
+							<li><strong>CH6 (SB)</strong>: Flight Mode → SB 스위치</li>
+						</ul>
+					</div>
+
+					<h4>4. 스위치 및 모드 설정</h4>
+					<ul>
+						<li><strong>ARM 스위치</strong>: SA ↑ = DISARM, SA ↓ = ARM</li>
+						<li><strong>모드 스위치</strong>: SB ↑ = STABILIZE, SB ↓ = ACRO</li>
+						<li><strong>페일세이프</strong>: 모든 채널 Hold, Throttle → 900μs</li>
+					</ul>
+				</div>
+
+				<div class="setup-guide">
+					<h3>🥽 Walksnail Goggles X 설정</h3>
+
+					<h4>1. 초기 설정</h4>
+					<ul>
+						<li><strong>언어 설정</strong>: Settings → Language → 한국어</li>
+						<li><strong>채널 검색</strong>: Auto Scan으로 VTX 검색</li>
+						<li><strong>화질 설정</strong>: 1080p60 고정</li>
+					</ul>
+
+					<h4>2. Avatar HD V2 바인딩</h4>
+					<ul>
+						<li><strong>바인딩 모드</strong>: 고글과 VTX 동시에 바인딩 버튼</li>
+						<li><strong>채널 확인</strong>: 연결된 채널 번호 기억</li>
+						<li><strong>신호 품질</strong>: RSSI 값 확인</li>
+					</ul>
+
+					<h4>3. OSD 설정</h4>
+					<ul>
+						<li><strong>배터리 전압</strong>: 좌상단에 표시</li>
+						<li><strong>비행 시간</strong>: 우상단에 표시</li>
+						<li><strong>인공 수평선</strong>: 중앙에 표시</li>
+						<li><strong>GPS 정보</strong>: 하단에 표시 (추후)</li>
+					</ul>
+				</div>
+			</div>
+
+			<!-- 구매 팁 -->
+			<div class="section">
+				<h2 class="section-title">💡 구매 팁 & 주의사항</h2>
+
+				<div class="warning-box">
+					<h3>⚠️ 구매 전 확인사항</h3>
+					<ul>
+						<li><strong>주파수 대역</strong>: 한국은 2.4GHz 전용 (5.8GHz는 불법)</li>
+						<li><strong>전파인증</strong>: KC 인증 제품 또는 실험국 신고 필요</li>
+						<li><strong>배터리 규정</strong>: 리튬 배터리 운송 규정 확인</li>
+						<li><strong>A/S 지원</strong>: 국내 대리점 또는 커뮤니티 지원 확인</li>
+					</ul>
+				</div>
+
+				<div class="info-box">
+					<h3>🛒 추천 구매처</h3>
+					<ul>
+						<li><strong>해외직구</strong>: Banggood, GetFPV, RDQ (저렴하지만 배송 느림)</li>
+						<li><strong>국내업체</strong>: 코스모테크, 멀티로터코리아 (빠른 배송, A/S)</li>
+						<li><strong>중고거래</strong>: 네이버 카페, 당근마켓 (가성비 좋음)</li>
+						<li><strong>공식대리점</strong>: 보증 및 지원 최고</li>
+					</ul>
+				</div>
+
+				<div class="setup-guide">
+					<h3>📦 구매 우선순위</h3>
+
+					<h4>1단계: 필수품 (즉시 필요)</h4>
+					<ul>
+						<li>✅ 조종기 (RadioMaster TX16S 추천)</li>
+						<li>✅ SBUS 수신기 (FrSky R9 Mini)</li>
+						<li>✅ LiPo 배터리 (BETAFPV LAVA 550mAh 여러개)</li>
+						<li>✅ 배터리 충전기 (ToolkitRC M6D)</li>
+					</ul>
+
+					<h4>2단계: FPV 시스템 (비행 익숙해진 후)</h4>
+					<ul>
+						<li>🥽 FPV 고글 (Walksnail Goggles X)</li>
+						<li>📹 VTX 이미 장착됨 (Avatar HD V2)</li>
+						<li>📡 안테나 업그레이드 (LHCP 패치 안테나)</li>
+					</ul>
+
+					<h4>3단계: 액세서리 (편의성 향상)</h4>
+					<ul>
+						<li>🔧 정밀 드라이버 세트</li>
+						<li>🔋 추가 배터리팩</li>
+						<li>📱 필드 충전기 (휴대용)</li>
+						<li>🎒 전용 케이스</li>
+					</ul>
+				</div>
+			</div>
+
+			<!-- 커뮤니티 -->
+			<div class="section">
+				<h2 class="section-title">👥 추천 커뮤니티 & 리소스</h2>
+
+				<div class="product-grid">
+					<div class="product-card">
+						<div class="product-image">🇰🇷 한국</div>
+						<div class="product-info">
+							<div class="product-title">국내 커뮤니티</div>
+							<ul class="product-features">
+								<li><strong>네이버 카페</strong>: 드론 DIY 매니아</li>
+								<li><strong>디시인사이드</strong>: 드론 갤러리</li>
+								<li><strong>유튜브</strong>: FPV 코리아 채널</li>
+								<li><strong>카카오톡</strong>: 지역별 드론 오픈채팅</li>
+							</ul>
+						</div>
+					</div>
+
+					<div class="product-card">
+						<div class="product-image">🌍 글로벌</div>
+						<div class="product-info">
+							<div class="product-title">해외 리소스</div>
+							<ul class="product-features">
+								<li><strong>Reddit</strong>: r/Multicopter, r/fpv</li>
+								<li><strong>Discord</strong>: UAV Tech, ELRS Community</li>
+								<li><strong>YouTube</strong>: Joshua Bardwell, UAV Futures</li>
+								<li><strong>GitHub</strong>: EdgeTX, Betaflight</li>
+							</ul>
+						</div>
+					</div>
+
+					<div class="product-card">
+						<div class="product-image">📚 학습</div>
+						<div class="product-info">
+							<div class="product-title">학습 자료</div>
+							<ul class="product-features">
+								<li><strong>Simulator</strong>: Liftoff, Velocidrone</li>
+								<li><strong>Manual</strong>: EdgeTX User Manual</li>
+								<li><strong>Wiki</strong>: Ardupilot.org</li>
+								<li><strong>Course</strong>: FPV Know-it-All</li>
+							</ul>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- 최종 추천 -->
+			<div class="section">
+				<h2 class="section-title">🏆 최종 추천</h2>
+
+				<div class="info-box">
+					<h3>🎯 DIY Pavo Pico 드론용 최적 조합</h3>
+					<p><strong>조종기:</strong> RadioMaster TX16S Mark II ($199)</p>
+					<p><strong>수신기:</strong> FrSky R9 Mini ($45)</p>
+					<p><strong>고글:</strong> Walksnail Avatar HD Goggles X ($649)</p>
+					<p><strong>총 비용:</strong> $893 (약 120만원)</p>
+
+					<h4>선택 이유:</h4>
+					<ul>
+						<li>✅ <strong>완벽한 호환성</strong>: SBUS와 Avatar HD 시스템 완벽 지원</li>
+						<li>✅ <strong>최적 가성비</strong>: 가격 대비 최고 성능</li>
+						<li>✅ <strong>확장성</strong>: 향후 업그레이드 및 다른 드론 사용 가능</li>
+						<li>✅ <strong>커뮤니티 지원</strong>: 풍부한 자료와 도움말</li>
+						<li>✅ <strong>장기 사용</strong>: 수년간 사용 가능한 검증된 제품</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+
+</html>

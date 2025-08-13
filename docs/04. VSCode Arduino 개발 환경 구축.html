@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>VSCode Arduino 개발 환경 구축</title>
+	<style>
+		body {
+			font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+			margin: 0;
+			padding: 20px;
+			background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+			color: #333;
+		}
+
+		.container {
+			max-width: 1400px;
+			margin: 0 auto;
+			background: white;
+			border-radius: 20px;
+			box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+			overflow: hidden;
+		}
+
+		.header {
+			background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+			color: white;
+			padding: 30px;
+			text-align: center;
+		}
+
+		.header h1 {
+			margin: 0;
+			font-size: 2.5em;
+			font-weight: 300;
+		}
+
+		.content {
+			padding: 40px;
+		}
+
+		.section {
+			margin-bottom: 50px;
+		}
+
+		.section-title {
+			color: #2c3e50;
+			font-size: 1.8em;
+			margin-bottom: 20px;
+			padding-bottom: 10px;
+			border-bottom: 3px solid #3498db;
+			display: flex;
+			align-items: center;
+			gap: 10px;
+		}
+
+		.step-container {
+			background: #f8f9fa;
+			border-radius: 15px;
+			padding: 30px;
+			margin: 20px 0;
+			border-left: 5px solid #3498db;
+		}
+
+		.step {
+			background: white;
+			border-radius: 10px;
+			padding: 20px;
+			margin: 15px 0;
+			box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+			position: relative;
+		}
+
+		.step-number {
+			background: #3498db;
+			color: white;
+			border-radius: 50%;
+			width: 40px;
+			height: 40px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			font-weight: bold;
+			font-size: 1.2em;
+			position: absolute;
+			left: -20px;
+			top: 20px;
+			box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
+		}
+
+		.step h3 {
+			color: #2c3e50;
+			margin-left: 30px;
+			margin-top: 0;
+		}
+
+		.step-content {
+			margin-left: 30px;
+		}
+
+		.code-block {
+			background: #2c3e50;
+			color: #ecf0f1;
+			padding: 20px;
+			border-radius: 10px;
+			font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+			overflow-x: auto;
+			margin: 15px 0;
+			position: relative;
+		}
+
+		.code-header {
+			background: #34495e;
+			color: white;
+			padding: 10px 15px;
+			border-radius: 8px 8px 0 0;
+			font-size: 0.9em;
+			font-weight: bold;
+			margin: -20px -20px 15px -20px;
+		}
+
+		.terminal {
+			background: #1e1e1e;
+			color: #00ff00;
+			padding: 15px;
+			border-radius: 8px;
+			font-family: 'Consolas', monospace;
+			margin: 10px 0;
+		}
+
+		.file-structure {
+			background: #f8f9fa;
+			border: 2px solid #dee2e6;
+			border-radius: 10px;
+			padding: 20px;
+			font-family: 'Consolas', monospace;
+			margin: 15px 0;
+		}
+
+		.extension-card {
+			background: white;
+			border-radius: 10px;
+			padding: 20px;
+			margin: 15px 0;
+			box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+			border-left: 4px solid #e74c3c;
+		}
+
+		.extension-card.recommended {
+			border-left-color: #27ae60;
+		}
+
+		.extension-card.optional {
+			border-left-color: #f39c12;
+		}
+
+		.warning-box {
+			background: linear-gradient(135deg, #ff7675, #fd79a8);
+			color: white;
+			padding: 20px;
+			border-radius: 10px;
+			margin: 20px 0;
+			border-left: 5px solid #d63031;
+		}
+
+		.info-box {
+			background: linear-gradient(135deg, #74b9ff, #0984e3);
+			color: white;
+			padding: 20px;
+			border-radius: 10px;
+			margin: 20px 0;
+			border-left: 5px solid #2d3436;
+		}
+
+		.success-box {
+			background: linear-gradient(135deg, #00b894, #00cec9);
+			color: white;
+			padding: 20px;
+			border-radius: 10px;
+			margin: 20px 0;
+			border-left: 5px solid #00b894;
+		}
+
+		.grid-layout {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+			gap: 20px;
+			margin: 20px 0;
+		}
+
+		.feature-card {
+			background: white;
+			border-radius: 10px;
+			padding: 20px;
+			box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+			border-top: 4px solid #3498db;
+		}
+
+		.keyboard-shortcut {
+			background: #ecf0f1;
+			padding: 4px 8px;
+			border-radius: 4px;
+			font-family: 'Consolas', monospace;
+			font-size: 0.9em;
+			border: 1px solid #bdc3c7;
+		}
+
+		.command-palette {
+			background: #34495e;
+			color: white;
+			padding: 8px 12px;
+			border-radius: 6px;
+			font-family: 'Consolas', monospace;
+			display: inline-block;
+			margin: 5px;
+		}
+
+		.copy-button {
+			position: absolute;
+			top: 10px;
+			right: 10px;
+			background: #3498db;
+			color: white;
+			border: none;
+			padding: 5px 10px;
+			border-radius: 4px;
+			cursor: pointer;
+			font-size: 0.8em;
+		}
+
+		.copy-button:hover {
+			background: #2980b9;
+		}
+
+		.tab-container {
+			margin: 20px 0;
+		}
+
+		.tab-buttons {
+			display: flex;
+			background: #ecf0f1;
+			border-radius: 8px 8px 0 0;
+			overflow: hidden;
+		}
+
+		.tab-button {
+			background: none;
+			border: none;
+			padding: 12px 20px;
+			cursor: pointer;
+			transition: background 0.3s;
+			font-weight: bold;
+		}
+
+		.tab-button.active {
+			background: #3498db;
+			color: white;
+		}
+
+		.tab-content {
+			background: white;
+			border: 2px solid #ecf0f1;
+			border-radius: 0 0 8px 8px;
+			padding: 20px;
+			display: none;
+		}
+
+		.tab-content.active {
+			display: block;
+		}
+	</style>
+</head>
+
+<body>
+	<div class="container">
+		<div class="header">
+			<h1>💻 VSCode Arduino 개발 환경 구축</h1>
+			<p>DIY Pavo Pico 드론 개발을 위한 완벽한 개발 환경</p>
+		</div>
+
+		<div class="content">
+			<!-- 개요 -->
+			<div class="section">
+				<h2 class="section-title">🎯 왜 VSCode를 사용해야 할까요?</h2>
+
+				<div class="grid-layout">
+					<div class="feature-card">
+						<h3>🚀 강력한 기능</h3>
+						<ul>
+							<li>IntelliSense 자동완성</li>
+							<li>실시간 오류 감지</li>
+							<li>Git 통합</li>
+							<li>확장성 높은 플러그인</li>
+						</ul>
+					</div>
+
+					<div class="feature-card">
+						<h3>🔧 Arduino IDE 한계 극복</h3>
+						<ul>
+							<li>한 줄씩만 보이는 시리얼 모니터</li>
+							<li>제한적인 편집 기능</li>
+							<li>디버깅 도구 부족</li>
+							<li>큰 프로젝트 관리 어려움</li>
+						</ul>
+					</div>
+
+					<div class="feature-card">
+						<h3>💼 전문적인 개발</h3>
+						<ul>
+							<li>멀티 파일 프로젝트</li>
+							<li>라이브러리 관리</li>
+							<li>버전 관리</li>
+							<li>협업 기능</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+
+			<!-- 설치 과정 -->
+			<div class="section">
+				<h2 class="section-title">📥 1단계: 기본 소프트웨어 설치</h2>
+
+				<div class="step-container">
+					<div class="step">
+						<div class="step-number">1</div>
+						<h3>Visual Studio Code 설치</h3>
+						<div class="step-content">
+							<p><strong>다운로드:</strong> <a href="https://code.visualstudio.com/"
+									target="_blank">https://code.visualstudio.com/</a></p>
+							<ul>
+								<li>Windows: .exe 파일 다운로드</li>
+								<li>macOS: .dmg 파일 다운로드</li>
+								<li>Linux: .deb 또는 .rpm 패키지</li>
+							</ul>
+
+							<div class="info-box">
+								<strong>💡 설치 팁:</strong> "Add to PATH" 옵션을 체크하세요. 터미널에서 <code>code</code> 명령어를 사용할 수
+								있습니다.
+							</div>
+						</div>
+					</div>
+
+					<div class="step">
+						<div class="step-number">2</div>
+						<h3>Arduino IDE 2.0 설치</h3>
+						<div class="step-content">
+							<p><strong>다운로드:</strong> <a href="https://www.arduino.cc/en/software"
+									target="_blank">https://www.arduino.cc/en/software</a></p>
+							<p>VSCode에서도 Arduino 컴파일러가 필요합니다.</p>
+
+							<div class="terminal">
+								<div class="code-header">Arduino IDE 2.0 설치 확인</div>
+								# Windows
+								arduino-cli version
+
+								# macOS/Linux
+								which arduino-cli
+							</div>
+						</div>
+					</div>
+
+					<div class="step">
+						<div class="step-number">3</div>
+						<h3>Git 설치 (선택사항)</h3>
+						<div class="step-content">
+							<p><strong>다운로드:</strong> <a href="https://git-scm.com/"
+									target="_blank">https://git-scm.com/</a></p>
+							<p>버전 관리를 위해 권장됩니다.</p>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- VSCode 확장 프로그램 -->
+			<div class="section">
+				<h2 class="section-title">🔌 2단계: VSCode 확장 프로그램 설치</h2>
+
+				<div class="step-container">
+					<div class="extension-card recommended">
+						<h3>✅ 필수 확장 프로그램</h3>
+
+						<h4>1. Arduino (Microsoft)</h4>
+						<p><strong>ID:</strong> <code>vsciot-vscode.vscode-arduino</code></p>
+						<p>Arduino 개발의 핵심 확장 프로그램</p>
+
+						<div class="code-block">
+							<div class="code-header">설치 방법</div>
+							<button class="copy-button"
+								onclick="copyToClipboard('ext install vsciot-vscode.vscode-arduino')">복사</button>
+							# VSCode 터미널에서
+							ext install vsciot-vscode.vscode-arduino
+
+							# 또는 Ctrl+Shift+X → "Arduino" 검색
+						</div>
+
+						<h4>2. C/C++ (Microsoft)</h4>
+						<p><strong>ID:</strong> <code>ms-vscode.cpptools</code></p>
+						<p>C++ IntelliSense, 디버깅, 코드 탐색</p>
+
+						<h4>3. C/C++ Extension Pack</h4>
+						<p><strong>ID:</strong> <code>ms-vscode.cpptools-extension-pack</code></p>
+						<p>C++ 개발에 필요한 모든 도구 패키지</p>
+					</div>
+
+					<div class="extension-card optional">
+						<h3>🌟 추천 확장 프로그램</h3>
+
+						<h4>4. Serial Monitor</h4>
+						<p><strong>ID:</strong> <code>ms-vscode.vscode-serial-monitor</code></p>
+						<p>향상된 시리얼 모니터</p>
+
+						<h4>5. PlatformIO IDE</h4>
+						<p><strong>ID:</strong> <code>platformio.platformio-ide</code></p>
+						<p>전문적인 임베디드 개발 도구</p>
+
+						<h4>6. GitLens</h4>
+						<p><strong>ID:</strong> <code>eamodio.gitlens</code></p>
+						<p>Git 시각화 및 이력 관리</p>
+
+						<h4>7. Bracket Pair Colorizer</h4>
+						<p><strong>ID:</strong> <code>coenraads.bracket-pair-colorizer-2</code></p>
+						<p>괄호 쌍 색상 구분</p>
+					</div>
+
+					<div class="extension-card">
+						<h3>🎨 테마 및 아이콘</h3>
+
+						<h4>8. One Dark Pro</h4>
+						<p><strong>ID:</strong> <code>zhuangtongfa.material-theme</code></p>
+						<p>인기 있는 다크 테마</p>
+
+						<h4>9. Material Icon Theme</h4>
+						<p><strong>ID:</strong> <code>pkief.material-icon-theme</code></p>
+						<p>직관적인 파일 아이콘</p>
+					</div>
+				</div>
+
+				<div class="success-box">
+					<h3>🚀 일괄 설치 스크립트</h3>
+					<div class="code-block">
+						<div class="code-header">PowerShell/Bash 스크립트</div>
+						<button class="copy-button"
+							onclick="copyToClipboard(this.nextElementSibling.textContent)">복사</button>
+						# 필수 확장 프로그램 일괄 설치
+						code --install-extension vsciot-vscode.vscode-arduino
+						code --install-extension ms-vscode.cpptools
+						code --install-extension ms-vscode.cpptools-extension-pack
+						code --install-extension ms-vscode.vscode-serial-monitor
+
+						# 추천 확장 프로그램
+						code --install-extension platformio.platformio-ide
+						code --install-extension eamodio.gitlens
+						code --install-extension zhuangtongfa.material-theme
+						code --install-extension pkief.material-icon-theme
+					</div>
+				</div>
+			</div>
+
+			<!-- 프로젝트 설정 -->
+			<div class="section">
+				<h2 class="section-title">📁 3단계: 드론 프로젝트 설정</h2>
+
+				<div class="step-container">
+					<div class="step">
+						<div class="step-number">1</div>
+						<h3>프로젝트 폴더 구조 생성</h3>
+						<div class="step-content">
+							<div class="file-structure">
+								DIY_Pavo_Pico_Drone/
+								├── src/
+								│ ├── DIY_Pavo_Pico_Drone.ino # 메인 Arduino 파일
+								│ ├── config.h # 설정 헤더
+								│ ├── sensors.cpp # 센서 처리
+								│ ├── sensors.h # 센서 헤더
+								│ ├── control.cpp # 제어 알고리즘
+								│ ├── control.h # 제어 헤더
+								│ ├── communication.cpp # 통신 처리
+								│ └── communication.h # 통신 헤더
+								├── lib/ # 외부 라이브러리
+								├── docs/ # 문서
+								├── hardware/ # 회로도, PCB 파일
+								├── .vscode/ # VSCode 설정
+								│ ├── arduino.json # Arduino 설정
+								│ ├── c_cpp_properties.json # C++ 설정
+								│ └── settings.json # 워크스페이스 설정
+								├── .gitignore # Git 무시 파일
+								└── README.md # 프로젝트 설명
+							</div>
+
+							<div class="terminal">
+								<div class="code-header">폴더 생성 명령어</div>
+								# Windows (PowerShell)
+								mkdir DIY_Pavo_Pico_Drone
+								cd DIY_Pavo_Pico_Drone
+								mkdir src, lib, docs, hardware, .vscode
+
+								# macOS/Linux
+								mkdir -p DIY_Pavo_Pico_Drone/{src,lib,docs,hardware,.vscode}
+								cd DIY_Pavo_Pico_Drone
+							</div>
+						</div>
+					</div>
+
+					<div class="step">
+						<div class="step-number">2</div>
+						<h3>VSCode에서 프로젝트 열기</h3>
+						<div class="step-content">
+							<p><strong>방법 1:</strong> VSCode에서 <kbd class="keyboard-shortcut">Ctrl+K Ctrl+O</kbd> → 폴더
+								선택</p>
+							<p><strong>방법 2:</strong> 터미널에서 <code>code .</code> 명령어</p>
+							<p><strong>방법 3:</strong> 탐색기에서 폴더 우클릭 → "Code로 열기"</p>
+						</div>
+					</div>
+
+					<div class="step">
+						<div class="step-number">3</div>
+						<h3>Arduino 설정 파일 생성</h3>
+						<div class="step-content">
+							<p><strong>명령 팔레트:</strong> <kbd class="keyboard-shortcut">Ctrl+Shift+P</kbd></p>
+							<p><span class="command-palette">Arduino: Initialize</span> 검색 후 실행</p>
+
+							<div class="code-block">
+								<div class="code-header">.vscode/arduino.json</div>
+								<button class="copy-button"
+									onclick="copyToClipboard(this.nextElementSibling.textContent)">복사</button>
+								{
+								"board": "esp32:esp32:arduino_nano_nora",
+								"configuration":
+								"CDCOnBoot=cdc,MSCOnBoot=default,DFUOnBoot=default,UploadMode=cdc,CPUFreq=240,FlashMode=qio,FlashFreq=80,FlashSize=4M,PartitionScheme=default,DebugLevel=none,EraseFlash=none",
+								"port": "COM3",
+								"sketch": "src/DIY_Pavo_Pico_Drone.ino",
+								"output": "build"
+								}
+							</div>
+
+							<div class="code-block">
+								<div class="code-header">.vscode/c_cpp_properties.json</div>
+								<button class="copy-button"
+									onclick="copyToClipboard(this.nextElementSibling.textContent)">복사</button>
+								{
+								"configurations": [
+								{
+								"name": "Arduino",
+								"compilerPath":
+								"C:/Users/AppData/Local/Arduino15/packages/esp32/tools/xtensa-esp32s3-elf-gcc/esp-2021r2-patch5-8.4.0/bin/xtensa-esp32s3-elf-gcc.exe",
+								"compilerArgs": [
+								"-std=gnu++11",
+								"-Os",
+								"-g3",
+								"-Wall",
+								"-ffunction-sections",
+								"-fdata-sections",
+								"-fno-exceptions",
+								"-fno-rtti"
+								],
+								"intelliSenseMode": "gcc-x64",
+								"includePath": [
+								"${workspaceFolder}/**",
+								"C:/Users/AppData/Local/Arduino15/packages/esp32/hardware/esp32/*/cores/esp32",
+								"C:/Users/AppData/Local/Arduino15/packages/esp32/hardware/esp32/*/libraries/**",
+								"C:/Program Files (x86)/Arduino/libraries/**"
+								],
+								"forcedInclude": [
+								"C:/Users/AppData/Local/Arduino15/packages/esp32/hardware/esp32/*/cores/esp32/Arduino.h"
+								],
+								"cStandard": "c11",
+								"cppStandard": "c++11",
+								"defines": [
+								"ESP32",
+								"ARDUINO_ARCH_ESP32",
+								"ARDUINO_NANO_ESP32"
+								]
+								}
+								],
+								"version": 4
+								}
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- 보드 설정 -->
+			<div class="section">
+				<h2 class="section-title">⚙️ 4단계: Arduino Nano ESP32 보드 설정</h2>
+
+				<div class="step-container">
+					<div class="step">
+						<div class="step-number">1</div>
+						<h3>ESP32 보드 패키지 설치</h3>
+						<div class="step-content">
+							<p><kbd class="keyboard-shortcut">Ctrl+Shift+P</kbd> → <span
+									class="command-palette">Arduino: Board Manager</span></p>
+
+							<div class="code-block">
+								<div class="code-header">보드 패키지 URL 추가</div>
+								<button class="copy-button"
+									onclick="copyToClipboard('https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json')">복사</button>
+								https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+							</div>
+
+							<ol>
+								<li>Arduino IDE → 파일 → 환경설정</li>
+								<li>"추가 보드 매니저 URLs"에 위 URL 추가</li>
+								<li>도구 → 보드 → 보드 매니저</li>
+								<li>"esp32" 검색 → "esp32 by Espressif Systems" 설치</li>
+							</ol>
+						</div>
+					</div>
+
+					<div class="step">
+						<div class="step-number">2</div>
+						<h3>보드 및 포트 선택</h3>
+						<div class="step-content">
+							<p><kbd class="keyboard-shortcut">Ctrl+Shift+P</kbd> → <span
+									class="command-palette">Arduino: Board Config</span></p>
+
+							<ul>
+								<li><strong>보드:</strong> Arduino Nano ESP32</li>
+								<li><strong>포트:</strong> COM3 (Windows) 또는 /dev/ttyUSB0 (Linux)</li>
+								<li><strong>업로드 속도:</strong> 921600</li>
+								<li><strong>CPU 주파수:</strong> 240MHz</li>
+							</ul>
+
+							<div class="info-box">
+								<strong>💡 포트 찾기:</strong> 장치 관리자(Windows) 또는 <code>ls /dev/tty*</code>(Linux/Mac)에서 확인
+							</div>
+						</div>
+					</div>
+
+					<div class="step">
+						<div class="step-number">3</div>
+						<h3>라이브러리 설치</h3>
+						<div class="step-content">
+							<p><kbd class="keyboard-shortcut">Ctrl+Shift+P</kbd> → <span
+									class="command-palette">Arduino: Library Manager</span></p>
+
+							<div class="code-block">
+								<div class="code-header">필요한 라이브러리 목록</div>
+								ESP32Servo # 서보/ESC 제어
+								MPU9250_asukiaaa # MPU9250 센서
+								WiFi # ESP32 내장
+								Wire # I2C 통신 (내장)
+								SPI # SPI 통신 (내장)
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- 개발 워크플로우 -->
+			<div class="section">
+				<h2 class="section-title">🚀 5단계: 개발 워크플로우</h2>
+
+				<div class="tab-container">
+					<div class="tab-buttons">
+						<button class="tab-button active" onclick="showTab('compile')">컴파일 & 업로드</button>
+						<button class="tab-button" onclick="showTab('debug')">디버깅</button>
+						<button class="tab-button" onclick="showTab('monitor')">시리얼 모니터</button>
+						<button class="tab-button" onclick="showTab('git')">버전 관리</button>
+					</div>
+
+					<div class="tab-content active" id="compile">
+						<h3>💻 컴파일 및 업로드</h3>
+
+						<h4>단축키</h4>
+						<ul>
+							<li><kbd class="keyboard-shortcut">Ctrl+Alt+R</kbd> - 검증 (컴파일)</li>
+							<li><kbd class="keyboard-shortcut">Ctrl+Alt+U</kbd> - 업로드</li>
+							<li><kbd class="keyboard-shortcut">Ctrl+Alt+S</kbd> - 시리얼 모니터</li>
+						</ul>
+
+						<h4>명령 팔레트</h4>
+						<ul>
+							<li><span class="command-palette">Arduino: Verify</span></li>
+							<li><span class="command-palette">Arduino: Upload</span></li>
+							<li><span class="command-palette">Arduino: Upload Using Programmer</span></li>
+						</ul>
+
+						<div class="code-block">
+							<div class="code-header">tasks.json 자동화</div>
+							<button class="copy-button"
+								onclick="copyToClipboard(this.nextElementSibling.textContent)">복사</button>
+							{
+							"version": "2.0.0",
+							"tasks": [
+							{
+							"label": "Arduino: 컴파일",
+							"type": "shell",
+							"command": "arduino-cli",
+							"args": [
+							"compile",
+							"--fqbn", "esp32:esp32:arduino_nano_nora",
+							"src/"
+							],
+							"group": "build",
+							"presentation": {
+							"echo": true,
+							"reveal": "always"
+							}
+							},
+							{
+							"label": "Arduino: 업로드",
+							"type": "shell",
+							"command": "arduino-cli",
+							"args": [
+							"upload",
+							"--fqbn", "esp32:esp32:arduino_nano_nora",
+							"--port", "${config:arduino.port}",
+							"src/"
+							],
+							"group": "build",
+							"dependsOn": "Arduino: 컴파일"
+							}
+							]
+							}
+						</div>
+
+						<div class="warning-box">
+							<strong>⚠️ 업로드 문제 해결</strong>
+							<ul>
+								<li><strong>포트 오류:</strong> 장치 관리자에서 드라이버 확인</li>
+								<li><strong>권한 오류:</strong> Linux/Mac에서 <code>sudo usermod -a -G dialout $USER</code>
+								</li>
+								<li><strong>부트로더 모드:</strong> BOOT 버튼 누르고 업로드</li>
+							</ul>
+						</div>
+					</div>
+
+					<div class="tab-content" id="debug">
+						<h3>🐛 디버깅 방법</h3>
+
+						<h4>1. Serial 디버깅</h4>
+						<div class="code-block">
+							<div class="code-header">디버그 출력 예시</div>
+							<button class="copy-button"
+								onclick="copyToClipboard(this.nextElementSibling.textContent)">복사</button>
+							void setup() {
+							Serial.begin(115200);
+							Serial.println("=== DIY Pavo Pico 드론 시작 ===");
+
+							// 센서 초기화 디버그
+							if (initializeSensors()) {
+							Serial.println("✅ 센서 초기화 성공");
+							} else {
+							Serial.println("❌ 센서 초기화 실패");
+							}
+							}
+
+							void debugPrintSensorData() {
+							Serial.print("Roll: "); Serial.print(roll, 2);
+							Serial.print(", Pitch: "); Serial.print(pitch, 2);
+							Serial.print(", Yaw: "); Serial.println(yaw, 2);
+
+							Serial.print("Battery: "); Serial.print(batteryVoltage, 2);
+							Serial.println("V");
+							}
+						</div>
+
+						<h4>2. 조건부 디버깅</h4>
+						<div class="code-block">
+							<div class="code-header">config.h 디버그 설정</div>
+							<button class="copy-button"
+								onclick="copyToClipboard(this.nextElementSibling.textContent)">복사</button>
+							// config.h
+							#define DEBUG_ENABLED 1
+							#define DEBUG_SENSORS 1
+							#define DEBUG_CONTROL 0
+							#define DEBUG_MOTORS 0
+
+							#if DEBUG_ENABLED
+							#define DEBUG_PRINT(x) Serial.print(x)
+							#define DEBUG_PRINTLN(x) Serial.println(x)
+							#else
+							#define DEBUG_PRINT(x)
+							#define DEBUG_PRINTLN(x)
+							#endif
+
+							// 사용 예
+							#if DEBUG_SENSORS
+							DEBUG_PRINT("MPU9250 연결: ");
+							DEBUG_PRINTLN(testMPU9250Connection() ? "성공" : "실패");
+							#endif
+						</div>
+
+						<h4>3. 실시간 변수 모니터링</h4>
+						<div class="code-block">
+							<div class="code-header">JSON 형태 데이터 출력</div>
+							<button class="copy-button"
+								onclick="copyToClipboard(this.nextElementSibling.textContent)">복사</button>
+							void printDebugJSON() {
+							Serial.println("{");
+							Serial.print(" \"timestamp\": "); Serial.print(millis()); Serial.println(",");
+							Serial.print(" \"roll\": "); Serial.print(roll, 3); Serial.println(",");
+							Serial.print(" \"pitch\": "); Serial.print(pitch, 3); Serial.println(",");
+							Serial.print(" \"yaw\": "); Serial.print(yaw, 3); Serial.println(",");
+							Serial.print(" \"battery\": "); Serial.print(batteryVoltage, 2); Serial.println(",");
+							Serial.print(" \"armed\": "); Serial.println(systemArmed ? "true" : "false");
+							Serial.println("}");
+							}
+						</div>
+					</div>
+
+					<div class="tab-content" id="monitor">
+						<h3>📺 고급 시리얼 모니터 활용</h3>
+
+						<h4>1. VSCode Serial Monitor 확장</h4>
+						<ul>
+							<li><kbd class="keyboard-shortcut">Ctrl+Shift+P</kbd> → <span class="command-palette">Serial
+									Monitor: Start Monitoring</span></li>
+							<li>보드레이트: 115200</li>
+							<li>자동 스크롤, 타임스탬프 표시</li>
+							<li>데이터 로깅 및 저장</li>
+						</ul>
+
+						<h4>2. 데이터 시각화</h4>
+						<div class="code-block">
+							<div class="code-header">Arduino Serial Plotter 호환 형식</div>
+							<button class="copy-button"
+								onclick="copyToClipboard(this.nextElementSibling.textContent)">복사</button>
+							void plotSensorData() {
+							// Arduino Serial Plotter 형식
+							Serial.print("Roll:"); Serial.print(roll);
+							Serial.print(",Pitch:"); Serial.print(pitch);
+							Serial.print(",Yaw:"); Serial.print(yaw);
+							Serial.print(",Battery:"); Serial.println(batteryVoltage * 10); // 스케일 조정
+							}
+
+							void plotMotorOutputs() {
+							Serial.print("M1:"); Serial.print(motor_fl);
+							Serial.print(",M2:"); Serial.print(motor_fr);
+							Serial.print(",M3:"); Serial.print(motor_rl);
+							Serial.print(",M4:"); Serial.println(motor_rr);
+							}
+						</div>
+
+						<h4>3. CLI 명령어 인터페이스</h4>
+						<div class="code-block">
+							<div class="code-header">시리얼 명령어 처리</div>
+							<button class="copy-button"
+								onclick="copyToClipboard(this.nextElementSibling.textContent)">복사</button>
+							void handleSerialCommands() {
+							if (Serial.available()) {
+							String command = Serial.readStringUntil('\n');
+							command.trim();
+							command.toLowerCase();
+
+							if (command == "status") {
+							printSystemStatus();
+							}
+							else if (command == "calibrate") {
+							calibrateSensors();
+							}
+							else if (command.startsWith("pid_roll")) {
+							// PID 튜닝: pid_roll 1.2 0.8 0.15
+							parsePIDCommand(command, &rollPID);
+							}
+							else if (command == "help") {
+							printHelp();
+							}
+							else {
+							Serial.println("알 수 없는 명령어. 'help' 입력");
+							}
+							}
+							}
+
+							void printHelp() {
+							Serial.println("=== 사용 가능한 명령어 ===");
+							Serial.println("status - 시스템 상태");
+							Serial.println("calibrate - 센서 캘리브레이션");
+							Serial.println("pid_roll <p> <i>
+									<d> - Roll PID 설정");
+										Serial.println("help - 도움말");
+										}
+						</div>
+					</div>
+
+					<div class="tab-content" id="git">
+						<h3>📚 Git 버전 관리</h3>
+
+						<h4>1. Git 저장소 초기화</h4>
+						<div class="terminal">
+							<div class="code-header">Git 초기 설정</div>
+							# Git 저장소 초기화
+							git init
+
+							# .gitignore 파일 생성
+							echo "build/\n*.tmp\n.vscode/settings.json" > .gitignore
+
+							# 첫 번째 커밋
+							git add .
+							git commit -m "Initial commit: DIY Pavo Pico 드론 프로젝트"
+
+							# GitHub 연결 (선택사항)
+							git remote add origin https://github.com/username/DIY_Pavo_Pico_Drone.git
+							git push -u origin main
+						</div>
+
+						<h4>2. .gitignore 파일</h4>
+						<div class="code-block">
+							<div class="code-header">.gitignore</div>
+							<button class="copy-button"
+								onclick="copyToClipboard(this.nextElementSibling.textContent)">복사</button>
+							# 빌드 출력
+							build/
+							*.o
+							*.elf
+							*.hex
+							*.bin
+
+							# VSCode 설정 (개인별)
+							.vscode/settings.json
+							.vscode/launch.json
+
+							# 시리얼 로그
+							*.log
+							serial_output.txt
+
+							# macOS
+							.DS_Store
+
+							# Windows
+							Thumbs.db
+							desktop.ini
+
+							# 임시 파일
+							*.tmp
+							*.bak
+							*~
+						</div>
+
+						<h4>3. 브랜치 전략</h4>
+						<div class="terminal">
+							<div class="code-header">브랜치 관리</div>
+							# 기능 개발 브랜치
+							git checkout -b feature/pid-tuning
+							git checkout -b feature/sensor-fusion
+							git checkout -b feature/failsafe
+
+							# 개발 완료 후 메인 브랜치 병합
+							git checkout main
+							git merge feature/pid-tuning
+
+							# 태그로 버전 관리
+							git tag -a v1.0 -m "첫 번째 안정 버전"
+							git push origin v1.0
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- 고급 기능 -->
+			<div class="section">
+				<h2 class="section-title">🔥 6단계: 고급 개발 기능</h2>
+
+				<div class="grid-layout">
+					<div class="feature-card">
+						<h3>🎯 IntelliSense 자동완성</h3>
+						<ul>
+							<li>함수 이름 자동완성</li>
+							<li>매개변수 힌트</li>
+							<li>오류 실시간 감지</li>
+							<li>정의로 이동 (<kbd class="keyboard-shortcut">F12</kbd>)</li>
+						</ul>
+
+						<div class="code-block">
+							<div class="code-header">IntelliSense 설정</div>
+							// c_cpp_properties.json에서 설정
+							"intelliSenseMode": "gcc-x64",
+							"cStandard": "c11",
+							"cppStandard": "c++11"
+						</div>
+					</div>
+
+					<div class="feature-card">
+						<h3>🔍 코드 탐색</h3>
+						<ul>
+							<li>심볼 검색 (<kbd class="keyboard-shortcut">Ctrl+T</kbd>)</li>
+							<li>파일 내 검색 (<kbd class="keyboard-shortcut">Ctrl+F</kbd>)</li>
+							<li>전체 프로젝트 검색 (<kbd class="keyboard-shortcut">Ctrl+Shift+F</kbd>)</li>
+							<li>정의/참조 찾기</li>
+						</ul>
+					</div>
+
+					<div class="feature-card">
+						<h3>📝 코드 서식</h3>
+						<ul>
+							<li>자동 서식 (<kbd class="keyboard-shortcut">Shift+Alt+F</kbd>)</li>
+							<li>저장 시 자동 서식</li>
+							<li>코드 접기/펼치기</li>
+							<li>다중 커서 편집</li>
+						</ul>
+
+						<div class="code-block">
+							<div class="code-header">settings.json 자동 서식</div>
+							{
+							"editor.formatOnSave": true,
+							"editor.formatOnType": true,
+							"C_Cpp.clang_format_style": "Google"
+							}
+						</div>
+					</div>
+
+					<div class="feature-card">
+						<h3>🔧 코드 스니펫</h3>
+						<ul>
+							<li>자주 쓰는 코드 템플릿</li>
+							<li>사용자 정의 스니펫</li>
+							<li>매크로 확장</li>
+							<li>라이브 템플릿</li>
+						</ul>
+
+						<div class="code-block">
+							<div class="code-header">사용자 스니펫 예시</div>
+							{
+							"Arduino Setup": {
+							"prefix": "setup",
+							"body": [
+							"void setup() {",
+							" Serial.begin(115200);",
+							" Serial.println(\"=== $1 시작 ===\");",
+							" $0",
+							"}"
+							]
+							}
+							}
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- 문제 해결 -->
+			<div class="section">
+				<h2 class="section-title">🚨 7단계: 문제 해결 가이드</h2>
+
+				<div class="step-container">
+					<div class="warning-box">
+						<h3>❌ 자주 발생하는 문제들</h3>
+
+						<h4>1. 컴파일 오류</h4>
+						<ul>
+							<li><strong>헤더 파일 없음:</strong> includePath 확인</li>
+							<li><strong>라이브러리 없음:</strong> Library Manager에서 설치</li>
+							<li><strong>보드 정의 없음:</strong> 보드 패키지 재설치</li>
+						</ul>
+
+						<div class="code-block">
+							<div class="code-header">일반적인 컴파일 오류 해결</div>
+							# 캐시 정리
+							arduino-cli cache clean
+
+							# 라이브러리 다시 설치
+							arduino-cli lib install "ESP32Servo"
+							arduino-cli lib install "MPU9250_asukiaaa"
+
+							# 보드 재설치
+							arduino-cli core update-index
+							arduino-cli core install esp32:esp32
+						</div>
+
+						<h4>2. 업로드 실패</h4>
+						<ul>
+							<li><strong>포트 오류:</strong> 다른 프로그램에서 포트 사용 중</li>
+							<li><strong>드라이버 문제:</strong> CP210x 또는 CH340 드라이버 설치</li>
+							<li><strong>권한 문제:</strong> 관리자 권한으로 실행</li>
+						</ul>
+
+						<h4>3. IntelliSense 작동 안함</h4>
+						<ul>
+							<li><strong>경로 설정:</strong> c_cpp_properties.json 확인</li>
+							<li><strong>컴파일러 경로:</strong> 올바른 gcc 경로 설정</li>
+							<li><strong>캐시 문제:</strong> VSCode 재시작</li>
+						</ul>
+					</div>
+
+					<div class="success-box">
+						<h3>✅ 성능 최적화 팁</h3>
+
+						<h4>1. VSCode 설정 최적화</h4>
+						<div class="code-block">
+							<div class="code-header">settings.json 최적화</div>
+							<button class="copy-button"
+								onclick="copyToClipboard(this.nextElementSibling.textContent)">복사</button>
+							{
+							"files.autoSave": "onDelay",
+							"files.autoSaveDelay": 1000,
+							"editor.wordWrap": "on",
+							"editor.minimap.enabled": false,
+							"arduino.useArduinoCli": true,
+							"arduino.commandPath": "arduino-cli",
+							"C_Cpp.default.intelliSenseMode": "gcc-x64",
+							"C_Cpp.default.cStandard": "c11",
+							"C_Cpp.default.cppStandard": "c++11",
+							"serial-monitor.baudRate": 115200
+							}
+						</div>
+
+						<h4>2. 빌드 성능 향상</h4>
+						<ul>
+							<li>불필요한 확장 프로그램 비활성화</li>
+							<li>exclude 폴더로 빌드 캐시 제외</li>
+							<li>SSD 사용으로 I/O 성능 향상</li>
+						</ul>
+
+						<h4>3. 메모리 사용량 최적화</h4>
+						<ul>
+							<li>큰 파일은 제외 설정</li>
+							<li>Git 히스토리 정리</li>
+							<li>타임스탬프 캐시 정리</li>
+						</ul>
+					</div>
+				</div>
+			</div>
+
+			<!-- 최종 체크리스트 -->
+			<div class="section">
+				<h2 class="section-title">✅ 최종 확인 체크리스트</h2>
+
+				<div class="step-container">
+					<div class="success-box">
+						<h3>🎯 개발 환경 완성 체크</h3>
+
+						<div class="grid-layout">
+							<div class="feature-card">
+								<h4>기본 설정</h4>
+								<ul>
+									<li>□ VSCode 설치 완료</li>
+									<li>□ Arduino 확장 프로그램 설치</li>
+									<li>□ ESP32 보드 패키지 설치</li>
+									<li>□ 필요한 라이브러리 설치</li>
+								</ul>
+							</div>
+
+							<div class="feature-card">
+								<h4>프로젝트 설정</h4>
+								<ul>
+									<li>□ 폴더 구조 생성</li>
+									<li>□ arduino.json 설정</li>
+									<li>□ c_cpp_properties.json 설정</li>
+									<li>□ .gitignore 파일 생성</li>
+								</ul>
+							</div>
+
+							<div class="feature-card">
+								<h4>기능 테스트</h4>
+								<ul>
+									<li>□ 컴파일 성공</li>
+									<li>□ 업로드 성공</li>
+									<li>□ 시리얼 모니터 작동</li>
+									<li>□ IntelliSense 작동</li>
+								</ul>
+							</div>
+
+							<div class="feature-card">
+								<h4>고급 기능</h4>
+								<ul>
+									<li>□ Git 저장소 설정</li>
+									<li>□ 디버깅 환경 구축</li>
+									<li>□ 코드 서식 자동화</li>
+									<li>□ 사용자 스니펫 설정</li>
+								</ul>
+							</div>
+						</div>
+
+						<div class="info-box">
+							<h3>🚀 다음 단계</h3>
+							<ol>
+								<li><strong>기본 LED 깜빡임 테스트</strong> - 하드웨어 연결 확인</li>
+								<li><strong>센서 초기화 테스트</strong> - MPU9250 연결 확인</li>
+								<li><strong>SBUS 수신 테스트</strong> - 조종기 바인딩 확인</li>
+								<li><strong>모터 출력 테스트</strong> - ESC 연결 확인 (프로펠러 제거)</li>
+								<li><strong>실제 비행 테스트</strong> - 안전한 환경에서</li>
+							</ol>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<script>
+		function showTab(tabName) {
+			// 모든 탭 숨기기
+			document.querySelectorAll('.tab-content').forEach(tab => {
+				tab.classList.remove('active');
+			});
+			document.querySelectorAll('.tab-button').forEach(btn => {
+				btn.classList.remove('active');
+			});
+
+			// 선택된 탭 보이기
+			document.getElementById(tabName).classList.add('active');
+			event.target.classList.add('active');
+		}
+
+		function copyToClipboard(text) {
+			navigator.clipboard.writeText(text).then(() => {
+				// 복사 완료 표시
+				event.target.textContent = '복사됨!';
+				setTimeout(() => {
+					event.target.textContent = '복사';
+				}, 2000);
+			});
+		}
+	</script>
+</body>
+
+</html>
