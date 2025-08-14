@@ -366,7 +366,8 @@ void sendMSPAttitude(float roll, float pitch, float yaw)
 	uint8_t msp_attitude[12];
 
 	// MSP_ATTITUDE 메시지 구성
-	msp_attitude[0] = ';  // 헤더 msp_attitude[1] = 'M';
+	msp_attitude[0] = '>';  // 헤더 
+	msp_attitude[1] = 'M';
 	msp_attitude[2] = '<';
 	msp_attitude[3] = 6;   // 데이터 길이
 	msp_attitude[4] = 108; // MSP_ATTITUDE 명령
@@ -400,7 +401,8 @@ void sendMSPBattery(float voltage)
 	uint8_t msp_battery[10];
 
 	// MSP_ANALOG 메시지 구성
-	msp_battery[0] = '; msp_battery[1] = 'M';
+	msp_battery[0] = '>'; 
+	msp_battery[1] = 'M';
 	msp_battery[2] = '<';
 	msp_battery[3] = 4;	  // 데이터 길이
 	msp_battery[4] = 110; // MSP_ANALOG 명령
@@ -429,7 +431,8 @@ void sendMSPGPS()
 	uint8_t msp_gps[21];
 
 	// MSP_RAW_GPS 메시지 구성 (더미 데이터)
-	msp_gps[0] = '; msp_gps[1] = 'M';
+	msp_gps[0] = '>'; 
+	msp_gps[1] = 'M';
 	msp_gps[2] = '<';
 	msp_gps[3] = 16;  // 데이터 길이
 	msp_gps[4] = 106; // MSP_RAW_GPS 명령

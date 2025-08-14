@@ -66,38 +66,123 @@ void initializeControl() {
   Serial.println("제어 시스템 초기화 완료");
 }
 
-bool initializeMotors() {
+// bool initializeMotors() {
+//   Serial.println("모터/ESC 초기화 중...");
+  
+//   // Servo 라이브러리로 ESC 제어
+//   motorFL.attach(MOTOR_FL_PIN, MIN_THROTTLE_VALUE, MAX_THROTTLE_VALUE);
+//   motorFR.attach(MOTOR_FR_PIN, MIN_THROTTLE_VALUE, MAX_THROTTLE_VALUE);
+//   motorRL.attach(MOTOR_RL_PIN, MIN_THROTTLE_VALUE, MAX_THROTTLE_VALUE);
+//   motorRR.attach(MOTOR_RR_PIN, MIN_THROTTLE_VALUE, MAX_THROTTLE_VALUE);
+  
+//   delay(100);
+  
+//   // ESC 캘리브레이션 시퀀스
+//   Serial.println("ESC 캘리브레이션...");
+  
+//   // 최대 스로틀 신호 전송 (2초)
+//   motorFL.writeMicroseconds(MAX_THROTTLE_VALUE);
+//   motorFR.writeMicroseconds(MAX_THROTTLE_VALUE);
+//   motorRL.writeMicroseconds(MAX_THROTTLE_VALUE);
+//   motorRR.writeMicroseconds(MAX_THROTTLE_VALUE);
+//   delay(2000);
+  
+//   // 최소 스로틀 신호 전송 (2초)
+//   motorFL.writeMicroseconds(MIN_THROTTLE_VALUE);
+//   motorFR.writeMicroseconds(MIN_THROTTLE_VALUE);
+//   motorRL.writeMicroseconds(MIN_THROTTLE_VALUE);
+//   motorRR.writeMicroseconds(MIN_THROTTLE_VALUE);
+//   delay(2000);
+  
+//   Serial.println("ESC 캘리브레이션 완료");
+//   Serial.println("모터 초기화 완료");
+  
+//   return true;
+// }
+
+// void updateMotorOutputs(MotorOutputs *outputs)
+// {
+//   // 모터 PWM 신호 출력
+//   motorFL.writeMicroseconds(outputs->motor_fl);
+//   motorFR.writeMicroseconds(outputs->motor_fr);
+//   motorRL.writeMicroseconds(outputs->motor_rl);
+//   motorRR.writeMicroseconds(outputs->motor_rr);
+
+// #if DEBUG_MOTORS
+//   Serial.print("Motors: FL=");
+//   Serial.print(outputs->motor_fl);
+//   Serial.print(", FR=");
+//   Serial.print(outputs->motor_fr);
+//   Serial.print(", RL=");
+//   Serial.print(outputs->motor_rl);
+//   Serial.print(", RR=");
+//   Serial.println(outputs->motor_rr);
+// #endif
+// }
+
+// void stopAllMotors()
+// {
+//   motorFL.writeMicroseconds(MIN_THROTTLE_VALUE);
+//   motorFR.writeMicroseconds(MIN_THROTTLE_VALUE);
+//   motorRL.writeMicroseconds(MIN_THROTTLE_VALUE);
+//   motorRR.writeMicroseconds(MIN_THROTTLE_VALUE);
+
+//   // PID 적분항 리셋
+//   rollPID.integral = 0.0;
+//   pitchPID.integral = 0.0;
+//   yawPID.integral = 0.0;
+
+//   Serial.println("모든 모터 정지");
+// }
+
+// 서보 객체 대신 직접 PWM 제어
+void initializeMotors()
+{
   Serial.println("모터/ESC 초기화 중...");
-  
-  // Servo 라이브러리로 ESC 제어
-  motorFL.attach(MOTOR_FL_PIN, MIN_THROTTLE_VALUE, MAX_THROTTLE_VALUE);
-  motorFR.attach(MOTOR_FR_PIN, MIN_THROTTLE_VALUE, MAX_THROTTLE_VALUE);
-  motorRL.attach(MOTOR_RL_PIN, MIN_THROTTLE_VALUE, MAX_THROTTLE_VALUE);
-  motorRR.attach(MOTOR_RR_PIN, MIN_THROTTLE_VALUE, MAX_THROTTLE_VALUE);
-  
-  delay(100);
-  
-  // ESC 캘리브레이션 시퀀스
-  Serial.println("ESC 캘리브레이션...");
-  
-  // 최대 스로틀 신호 전송 (2초)
-  motorFL.writeMicroseconds(MAX_THROTTLE_VALUE);
-  motorFR.writeMicroseconds(MAX_THROTTLE_VALUE);
-  motorRL.writeMicroseconds(MAX_THROTTLE_VALUE);
-  motorRR.writeMicroseconds(MAX_THROTTLE_VALUE);
-  delay(2000);
-  
-  // 최소 스로틀 신호 전송 (2초)
-  motorFL.writeMicroseconds(MIN_THROTTLE_VALUE);
-  motorFR.writeMicroseconds(MIN_THROTTLE_VALUE);
-  motorRL.writeMicroseconds(MIN_THROTTLE_VALUE);
-  motorRR.writeMicroseconds(MIN_THROTTLE_VALUE);
-  delay(2000);
-  
-  Serial.println("ESC 캘리브레이션 완료");
+
+  // LEDC 채널 설정
+  ledcSetup(0, 50, 16); // 채널 0, 50Hz, 16비트 해상도
+  ledcSetup(1, 50, 16); // 채널 1
+  ledcSetup(2, 50, 16); // 채널 2
+  ledcSetup(3, 50, 16); // 채널 3
+
+  // 핀에 채널 연결
+  ledcAttachPin(MOTOR_FL_PIN, 0); // Pin 5
+  ledcAttachPin(MOTOR_FR_PIN, 1); // Pin 6
+  ledcAttachPin(MOTOR_RL_PIN, 2); // Pin 7
+  ledcAttachPin(MOTOR_RR_PIN, 3); // Pin 8
+
+  // 초기값 설정 (1500μs = 중립)
+  int neutralPulse = map(1500, 1000, 2000, 1638, 6553);
+  ledcWrite(0, neutralPulse);
+  ledcWrite(1, neutralPulse);
+  ledcWrite(2, neutralPulse);
+  ledcWrite(3, neutralPulse);
+
   Serial.println("모터 초기화 완료");
-  
-  return true;
+}
+
+void updateMotorOutputs(MotorOutputs *outputs)
+{
+  // μs를 LEDC 값으로 변환 (16비트, 50Hz)
+  int fl = map(outputs->motor_fl, 1000, 2000, 1638, 6553);
+  int fr = map(outputs->motor_fr, 1000, 2000, 1638, 6553);
+  int rl = map(outputs->motor_rl, 1000, 2000, 1638, 6553);
+  int rr = map(outputs->motor_rr, 1000, 2000, 1638, 6553);
+
+  ledcWrite(0, fl); // Motor FL
+  ledcWrite(1, fr); // Motor FR
+  ledcWrite(2, rl); // Motor RL
+  ledcWrite(3, rr); // Motor RR
+}
+
+void stopAllMotors()
+{
+  int stopValue = map(1000, 1000, 2000, 1638, 6553);
+  ledcWrite(0, stopValue);
+  ledcWrite(1, stopValue);
+  ledcWrite(2, stopValue);
+  ledcWrite(3, stopValue);
 }
 
 void calculateControl(SensorData* sensorData, ControllerInput* input, MotorOutputs* outputs, float deltaTime) {
@@ -257,39 +342,6 @@ float applyDeadband(float input, float deadband) {
   } else {
     return (input + deadband) / (1.0 - deadband);
   }
-}
-
-void updateMotorOutputs(MotorOutputs* outputs) {
-  // 모터 PWM 신호 출력
-  motorFL.writeMicroseconds(outputs->motor_fl);
-  motorFR.writeMicroseconds(outputs->motor_fr);
-  motorRL.writeMicroseconds(outputs->motor_rl);
-  motorRR.writeMicroseconds(outputs->motor_rr);
-  
-  #if DEBUG_MOTORS
-  Serial.print("Motors: FL=");
-  Serial.print(outputs->motor_fl);
-  Serial.print(", FR=");
-  Serial.print(outputs->motor_fr);
-  Serial.print(", RL=");
-  Serial.print(outputs->motor_rl);
-  Serial.print(", RR=");
-  Serial.println(outputs->motor_rr);
-  #endif
-}
-
-void stopAllMotors() {
-  motorFL.writeMicroseconds(MIN_THROTTLE_VALUE);
-  motorFR.writeMicroseconds(MIN_THROTTLE_VALUE);
-  motorRL.writeMicroseconds(MIN_THROTTLE_VALUE);
-  motorRR.writeMicroseconds(MIN_THROTTLE_VALUE);
-  
-  // PID 적분항 리셋
-  rollPID.integral = 0.0;
-  pitchPID.integral = 0.0;
-  yawPID.integral = 0.0;
-  
-  Serial.println("모든 모터 정지");
 }
 
 void constrainMotorOutputs(MotorOutputs* outputs) {

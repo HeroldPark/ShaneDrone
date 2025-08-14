@@ -7,8 +7,8 @@
 #define CONFIG_H
 
 #include <Arduino.h>
-#include <ESP32Servo.h>
-#include <esp32-hal-ledc.h> // ESP32 내장 PWM
+// #include <ESP32Servo.h>  ← 주석 처리
+// #include <esp32-hal-ledc.h> // ESP32 내장 PWM
 
 // ESP32 내장 기능 사용
 // PWM 제어는 별도 함수로 구현
@@ -241,15 +241,26 @@ struct DroneState {
 #define PI 3.14159265358979323846
 #endif
 
+// // Arduino.h에서 이미 정의된 매크로들과 충돌 방지
+// #ifndef DEG_TO_RAD
 // #define DEG_TO_RAD(deg) ((deg) * PI / 180.0)
-// #define RAD_TO_DEG(rad) ((rad) * 180.0 / PI)
+// #endif
 
-#define RAD_TO_DEG 57.295779513082320876798154814105
-#define DEG_TO_RAD 0.017453292519943295769236907684886
+// #ifndef RAD_TO_DEG
+// #define RAD_TO_DEG(rad) ((rad) * 180.0 / PI)
+// #endif
+
+// #define RAD_TO_DEG 57.295779513082320876798154814105
+// #define DEG_TO_RAD 0.017453292519943295769236907684886
 
 // =================================
 // 디버그 설정
 // =================================
+
+// DEBUG_ENABLED도 중복 방지
+#ifndef DEBUG_ENABLED
+#define DEBUG_ENABLED 1
+#endif
 
 #define DEBUG_ENABLED 1
 #define DEBUG_SENSORS 0

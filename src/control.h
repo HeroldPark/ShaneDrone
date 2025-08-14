@@ -55,4 +55,13 @@ void implementAntiWindup(PIDController* pid);
 void adaptivePIDGains(SensorData* sensorData);
 float calculateMotorMixing(float throttle, float roll, float pitch, float yaw, uint8_t motorIndex);
 
+// 서보 객체 선언 제거
+// static Servo motorFL, motorFR, motorRL, motorRR;
+
+// 대신 채널 번호만 정의
+#define MOTOR_FL_CHANNEL 0
+#define MOTOR_FR_CHANNEL 1
+#define MOTOR_RL_CHANNEL 2
+#define MOTOR_RR_CHANNEL 3
+
 #endif // CONTROL_H
