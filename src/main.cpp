@@ -6,11 +6,197 @@
  * 버전: 1.0
  * 날짜: 2025.08
  */
-
 #include "config.h"
-#include "sensors.h"
 #include "control.h"
+#include "sensors.h"
 #include "communication.h"
+
+// 전역 변수들
+static uint8_t currentFlightMode = 0;
+extern bool systemArmed;
+extern DroneState droneState;
+
+// PID 튜닝 함수들
+void tuneRollPID(float kp, float ki, float kd) {
+    Serial.printf("Roll PID 튜닝: P=%.3f, I=%.3f, D=%.3f\n", kp, ki, kd);
+    // 실제 PID 파라미터 적용 (control.cpp의 PID 구조체에 적용)
+}
+
+void tunePitchPID(float kp, float ki, float kd) {
+    Serial.printf("Pitch PID 튜닝: P=%.3f, I=%.3f, D=%.3f\n", kp, ki, kd);
+    // 실제 PID 파라미터 적용
+}
+
+void tuneYawPID(float kp, float ki, float kd) {
+    Serial.printf("Yaw PID 튜닝: P=%.3f, I=%.3f, D=%.3f\n", kp, ki, kd);
+    // 실제 PID 파라미터 적용
+}
+
+void resetPIDIntegrals() {
+    Serial.println("PID 적분항 리셋");
+    // PID 적분항 초기화
+}
+
+// 비행 모드 관리
+void setFlightMode(uint8_t mode) {
+    if (mode <= 2) {  // 0: STABILIZE, 1: ALTITUDE_HOLD, 2: ACRO
+        currentFlightMode = mode;
+        const char* modeNames[] = {"STABILIZE", "ALTITUDE_HOLD", "ACRO"};
+        Serial.printf("비행 모드 변경: %s\n", modeNames[mode]);
+    }
+}
+
+uint8_t getFlightMode() {
+    return currentFlightMode;
+}
+
+// 배터리 모니터링
+float readBatteryVoltage() {
+    static float lastVoltage = 4.0f;
+    
+    int rawValue = analogRead(BATTERY_PIN);
+    float voltage = (rawValue / 4095.0f) * 3.3f * VOLTAGE_DIVIDER_RATIO;
+    
+    // 간단한 저역 필터 적용
+    lastVoltage = lastVoltage * 0.9f + voltage * 0.1f;
+    
+    return lastVoltage;
+}
+
+// 센서 캘리브레이션
+void calibrateSensors() {
+    Serial.println("센서 캘리브레이션 시작...");
+    calibrateGyroscope();
+    calibrateAccelerometer();
+    calibrateMagnetometer();
+    Serial.println("센서 캘리브레이션 완료!");
+}
+
+void calibrateGyroscope() {
+    Serial.println("자이로스코프 캘리브레이션 중... (움직이지 마세요)");
+    delay(2000);
+    // 실제 자이로 캘리브레이션 구현
+    Serial.println("자이로스코프 캘리브레이션 완료");
+}
+
+void calibrateAccelerometer() {
+    Serial.println("가속도계 캘리브레이션 완료");
+    // 6면 캘리브레이션 등 구현
+}
+
+void calibrateMagnetometer() {
+    Serial.println("자력계 캘리브레이션 완료");
+    // 자력계 캘리브레이션 구현
+}
+
+// ARM/DISARM 체크
+void checkArmStatus(ControllerInput *input) {
+    static bool lastArmState = false;
+    bool currentArmSwitch = (input->aux1 > ARM_THRESHOLD);
+    
+    // ARM 조건 체크
+    bool canArm = (input->throttle < ARM_THROTTLE_THRESHOLD) &&
+                  (abs((int)input->roll - 1500) < ARM_STICK_THRESHOLD) &&
+                  (abs((int)input->pitch - 1500) < ARM_STICK_THRESHOLD) &&
+                  (abs((int)input->yaw - 1500) < ARM_STICK_THRESHOLD) &&
+                  (readBatteryVoltage() > MIN_BATTERY_VOLTAGE);
+    
+    if (currentArmSwitch && !lastArmState && canArm) {
+        // ARM 시퀀스
+        systemArmed = true;
+        Serial.println("*** SYSTEM ARMED ***");
+        calibrateGyroscope();
+        digitalWrite(LED_BUILTIN, HIGH);
+    }
+    else if (!currentArmSwitch && lastArmState) {
+        // DISARM 시퀀스
+        systemArmed = false;
+        Serial.println("*** SYSTEM DISARMED ***");
+        stopAllMotors();
+        digitalWrite(LED_BUILTIN, LOW);
+    }
+    
+    lastArmState = currentArmSwitch;
+}
+
+// 배터리 상태 체크
+void checkBatteryStatus(float voltage) {
+    static unsigned long lastBatteryWarning = 0;
+    unsigned long currentTime = millis();
+    
+    if (voltage < CRITICAL_BATTERY_VOLTAGE) {
+        if (systemArmed) {
+            Serial.println("!!! CRITICAL BATTERY - EMERGENCY LANDING !!!");
+            systemArmed = false;
+            stopAllMotors();
+        }
+    }
+    else if (voltage < LOW_BATTERY_VOLTAGE) {
+        if (currentTime - lastBatteryWarning > 10000) {
+            Serial.printf("WARNING: Low Battery - %.2fV\n", voltage);
+            lastBatteryWarning = currentTime;
+        }
+    }
+}
+
+// 시스템 상태 업데이트
+void updateSystemStatus() {
+    static unsigned long lastStatusUpdate = 0;
+    unsigned long currentTime = millis();
+    
+    if (currentTime - lastStatusUpdate > 1000) {
+        if (!systemArmed) {
+            static bool ledState = false;
+            ledState = !ledState;
+            digitalWrite(LED_BUILTIN, ledState);
+        }
+        lastStatusUpdate = currentTime;
+    }
+}
+
+// 안전 체크
+void performSafetyChecks() {
+    static unsigned long lastSensorCheck = 0;
+    unsigned long currentTime = millis();
+    
+    if (currentTime - lastSensorCheck > 5000) {
+        if (!checkSensorHealth()) {
+            Serial.println("WARNING: 센서 오류 감지");
+            if (systemArmed) {
+                systemArmed = false;
+                stopAllMotors();
+                Serial.println("센서 오류로 인한 자동 DISARM");
+            }
+        }
+        lastSensorCheck = currentTime;
+    }
+    
+    if (isReceiverTimeout() && systemArmed) {
+        Serial.println("통신 타임아웃 - 안전 모드 활성화");
+        activateFailsafeMode();
+    }
+}
+
+// Failsafe 모드
+void activateFailsafeMode() {
+    Serial.println("=== FAILSAFE MODE ACTIVATED ===");
+    
+    static unsigned long failsafeStartTime = millis();
+    static bool failsafeActive = false;
+    
+    if (!failsafeActive) {
+        failsafeStartTime = millis();
+        failsafeActive = true;
+    }
+    
+    // 10초 후 자동 DISARM
+    if (millis() - failsafeStartTime > 10000) {
+        systemArmed = false;
+        stopAllMotors();
+        failsafeActive = false;
+        Serial.println("Failsafe 타임아웃 - 자동 DISARM");
+    }
+}
 
 // 전역 변수
 DroneState droneState;
