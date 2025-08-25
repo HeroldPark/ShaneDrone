@@ -1,0 +1,7 @@
+#line 1 "C:\\Users\\herol\\Documents\\Workspace\\PavoPicoDrone\\.vscode\\arduino.json"
+{
+    "board": "esp32:esp32:nano_nora",
+    "configuration": "CDCOnBoot=cdc,UploadMode=cdc,CPUFreq=240",
+    "sketch": "test.ino",
+    "output": "build"
+}

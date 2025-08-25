@@ -1,0 +1,9 @@
+{
+  "additionalFiles": "..\\..\\..,..\\..\\..,..\\..\\..,..\\..\\..,..\\..,..\\..,..\\..,..\\..,..\\..,..\\..,..\\..,..\\..,..\\..,..\\..\\..,..\\..\\..",
+  "compiler.optimization_flags": "-Os",
+  "customBuildProperties": "",
+  "fqbn": "esp32:esp32:nano_nora:PartitionScheme=default,PinNumbers=default,USBMode=default",
+  "hardwareFolders": "C:\\Users\\herol\\AppData\\Local\\Arduino15\\packages",
+  "otherLibrariesFolders": "C:\\Users\\herol\\Documents\\Arduino\\libraries",
+  "sketchLocation": "C:\\Users\\herol\\Documents\\Workspace\\PavoPicoDrone"
+}

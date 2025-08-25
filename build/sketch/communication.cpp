@@ -1,3 +1,4 @@
+#line 1 "C:\\Users\\herol\\Documents\\Workspace\\PavoPicoDrone\\communication.cpp"
 /*
  * communication.cpp - 드론 통신 처리
  * SBUS 수신기, WiFi 텔레메트리, Walksnail Avatar HD V2 연동
@@ -5,9 +6,6 @@
 
 #include "communication.h"
 #include "config.h"
-#include "control.h"
-#include "sensors.h"
-#include <cmath>
 
 // SBUS 관련 변수
 static HardwareSerial *sbusSerial;
@@ -25,9 +23,6 @@ static bool wifiEnabled = false;
 // Walksnail Avatar HD V2 관련
 static HardwareSerial *vtxSerial;
 static bool vtxConnected = false;
-
-// 전역 변수 선언 (extern으로 선언되어 있으므로 정의 필요)
-bool systemArmed = false;
 
 bool initializeCommunication()
 {
@@ -372,8 +367,7 @@ void sendMSPAttitude(float roll, float pitch, float yaw)
 	uint8_t msp_attitude[12];
 
 	// MSP_ATTITUDE 메시지 구성
-	msp_attitude[0] = '$'; // 헤더
-	msp_attitude[1] = 'M';
+	msp_attitude[0] = ';  // 헤더 msp_attitude[1] = 'M';
 	msp_attitude[2] = '<';
 	msp_attitude[3] = 6;   // 데이터 길이
 	msp_attitude[4] = 108; // MSP_ATTITUDE 명령
@@ -407,8 +401,7 @@ void sendMSPBattery(float voltage)
 	uint8_t msp_battery[10];
 
 	// MSP_ANALOG 메시지 구성
-	msp_battery[0] = '$';
-	msp_battery[1] = 'M';
+	msp_battery[0] = '; msp_battery[1] = 'M';
 	msp_battery[2] = '<';
 	msp_battery[3] = 4;	  // 데이터 길이
 	msp_battery[4] = 110; // MSP_ANALOG 명령
@@ -437,8 +430,7 @@ void sendMSPGPS()
 	uint8_t msp_gps[21];
 
 	// MSP_RAW_GPS 메시지 구성 (더미 데이터)
-	msp_gps[0] = '$';
-	msp_gps[1] = 'M';
+	msp_gps[0] = '; msp_gps[1] = 'M';
 	msp_gps[2] = '<';
 	msp_gps[3] = 16;  // 데이터 길이
 	msp_gps[4] = 106; // MSP_RAW_GPS 명령
@@ -701,42 +693,6 @@ void handleSerialCommands()
 			else
 			{
 				Serial.println("사용법: pid_roll <p> <i> <d>");
-			}
-		}
-		else if (command.startsWith("pid_pitch"))
-		{
-			int space1 = command.indexOf(' ');
-			int space2 = command.indexOf(' ', space1 + 1);
-			int space3 = command.indexOf(' ', space2 + 1);
-
-			if (space1 > 0 && space2 > 0 && space3 > 0)
-			{
-				float kp = command.substring(space1 + 1, space2).toFloat();
-				float ki = command.substring(space2 + 1, space3).toFloat();
-				float kd = command.substring(space3 + 1).toFloat();
-				tunePitchPID(kp, ki, kd);
-			}
-			else
-			{
-				Serial.println("사용법: pid_pitch <p> <i> <d>");
-			}
-		}
-		else if (command.startsWith("pid_yaw"))
-		{
-			int space1 = command.indexOf(' ');
-			int space2 = command.indexOf(' ', space1 + 1);
-			int space3 = command.indexOf(' ', space2 + 1);
-
-			if (space1 > 0 && space2 > 0 && space3 > 0)
-			{
-				float kp = command.substring(space1 + 1, space2).toFloat();
-				float ki = command.substring(space2 + 1, space3).toFloat();
-				float kd = command.substring(space3 + 1).toFloat();
-				tuneYawPID(kp, ki, kd);
-			}
-			else
-			{
-				Serial.println("사용법: pid_yaw <p> <i> <d>");
 			}
 		}
 		else
