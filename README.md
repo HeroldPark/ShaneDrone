@@ -13,3 +13,6 @@
 	- VSCode + PlatformIO + Arduino Nano ESP32 S3
 	- DIY Pavo Pico Drone - Arduino Nano ESP32 + MPU9250
 	- BETAFPV 1102 14000KV 모터 + Walksnail Avatar HD V2
+
+## 2025-08-27
+	- PavoPicoDrone => ShaneDrone으로 변경
