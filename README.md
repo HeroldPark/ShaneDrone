@@ -16,3 +16,7 @@
 
 ## 2025-08-27
 	- PavoPicoDrone => ShaneDrone으로 변경
+	- 저장소 변경
+## git remote set-url origin git@github.com:사용자명/저장소명.git
+
+	- 3.5_Wokwi 오류 수정 : 사용 함수 미설정

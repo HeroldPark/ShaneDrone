@@ -41,6 +41,15 @@ struct DroneState
 SensorData sensorData;
 DroneState droneState;
 
+// 함수 선언 (Forward Declarations)
+void initializeData();
+void testBasicFunctions();
+void printStatus();
+void updateVirtualSensors();
+void testHighFrequencyLoop();
+void testWiFi();
+void testI2C();
+
 void setup()
 {
   Serial.begin(115200);
