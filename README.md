@@ -20,3 +20,13 @@
 ## git remote set-url origin git@github.com:사용자명/저장소명.git
 
 	- 3.5_Wokwi 오류 수정 : 사용 함수 미설정
+
+## 2025-09-01
+	- Telemetry를 Web 서버로 확대
+
+### 5. 웹 대시보드 테스트
+	이제 센서 오류와 관계없이 시스템이 부팅되므로:
+	- 시리얼 모니터에서 WiFi AP 생성 확인
+	- 스마트폰/PC에서 "Shane_Drone" WiFi에 연결
+	- 브라우저에서 http://192.168.4.1 접속
+	- 시뮬레이션 데이터로 대시보드 작동 확인

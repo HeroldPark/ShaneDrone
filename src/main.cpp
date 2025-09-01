@@ -43,7 +43,7 @@ void setup()
   delay(1000);
 
   Serial.println("=================================");
-  Serial.println("DIY Pavo Pico Drone v1.0");
+  Serial.println("DIY Shane Drone v1.0");
   Serial.println("Arduino Nano ESP32 + MPU9250");
   Serial.println("=================================");
 
@@ -52,14 +52,22 @@ void setup()
   digitalWrite(LED_BUILTIN, LOW);
 
   // 하드웨어 초기화
-  if (!initializeSensors())
-  {
-    Serial.println("ERROR: 센서 초기화 실패!");
-    while (1)
-    {
-      delay(1000);
-      Serial.println("시스템 중단 - 센서 확인 필요");
-    }
+  // 센서 있을 떄
+  // if (!initializeSensors())
+  // {
+  //   Serial.println("ERROR: 센서 초기화 실패!");
+  //   while (1)
+  //   {
+  //     delay(1000);
+  //     Serial.println("시스템 중단 - 센서 확인 필요");
+  //   }
+  // }
+
+  // 센서 초기화 시도
+  bool sensorSuccess = initializeSensors();
+  if (!sensorSuccess) {
+    Serial.println("WARNING: 센서 초기화 실패 - 시뮬레이션 모드로 전환");
+    // 센서 없이도 계속 진행
   }
 
   // 모터 초기화 (void 타입)
@@ -71,6 +79,9 @@ void setup()
     Serial.println("WARNING: 통신 초기화 실패 - 수동 모드로 전환");
   }
 
+  // 웹 서버 설정 추가
+  setupWebServer();
+
   // 제어 시스템 초기화
   initializeControl();
 
@@ -78,6 +89,8 @@ void setup()
   systemReady = true;
   Serial.println("시스템 준비 완료!");
   Serial.println("ARM 신호 대기 중...");
+
+  Serial.println("시스템 준비 완료! (센서 상태: " + String(sensorSuccess ? "정상" : "시뮬레이션") + ")");
 
   lastLoopTime = micros();
 }
@@ -138,6 +151,13 @@ void loop()
     sendTelemetryData(&sensorData, &controllerInput, batteryVoltage);
     lastTelemetryUpdate = currentTime;
   }
+
+  // 웹 서버 처리 추가
+  webServer.handleClient();
+  webSocket.loop();
+  
+  // 실시간 텔레메트리 브로드캐스트
+  broadcastTelemetry();
 
   // 5. 시스템 모니터링
   updateSystemStatus();
@@ -279,4 +299,17 @@ void activateFailsafeMode()
     failsafeActive = false;
     Serial.println("Failsafe 타임아웃 - 자동 DISARM");
   }
+}
+
+// main.cpp에 추가
+void debugPrintStatus() {
+    static unsigned long lastPrint = 0;
+    if (millis() - lastPrint > 100) { // 10Hz
+        Serial.printf("R:%.1f P:%.1f Y:%.1f T:%.2f FL:%d FR:%d RL:%d RR:%d\n",
+            sensorData.roll, sensorData.pitch, sensorData.yaw,
+            controllerInput.throttleNorm,
+            motorOutputs.motor_fl, motorOutputs.motor_fr,
+            motorOutputs.motor_rl, motorOutputs.motor_rr);
+        lastPrint = millis();
+    }
 }

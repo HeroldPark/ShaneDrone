@@ -123,7 +123,7 @@
 #define SBUS_INVERT true
 
 // WiFi 텔레메트리 (선택사항)
-#define WIFI_SSID "PavoPico_Drone"
+#define WIFI_SSID "Shane_Drone"
 #define WIFI_PASSWORD "drone123"
 #define TELEMETRY_PORT 8888
 
@@ -160,6 +160,15 @@
 
 // 배터리 보호
 #define VOLTAGE_DIVIDER_RATIO 3.0 // 분압비 (3.3V → 11.1V 측정용)
+
+// config.h에 추가할 설정들
+#define WEB_SERVER_PORT 80
+#define WEBSOCKET_PORT 81
+#define MAX_WEBSOCKET_CLIENTS 5
+
+// JSON 버퍼 크기
+#define TELEMETRY_JSON_SIZE 1024
+#define COMMAND_JSON_SIZE 256
 
 // =================================
 // 데이터 구조체

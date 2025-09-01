@@ -131,7 +131,7 @@
 #define SBUS_INVERT true
 
 // WiFi 텔레메트리 (선택사항)
-#define WIFI_SSID "PavoPico_Drone"
+#define WIFI_SSID "Shane_Drone"
 #define WIFI_PASSWORD "drone123"
 #define TELEMETRY_PORT 8888
 

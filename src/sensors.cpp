@@ -21,6 +21,9 @@ static unsigned long lastFilterUpdate = 0;
 static bool sensorInitialized = false;
 static bool sensorCalibrated = false;
 
+// 전역 변수 추가
+static bool simulationMode = false;
+
 bool initializeSensors() {
   Serial.println("MPU9250 센서 초기화 중...");
   
@@ -28,11 +31,48 @@ bool initializeSensors() {
   Wire.begin(SDA_PIN, SCL_PIN);
   Wire.setClock(400000); // 400kHz
   
+  Serial.println("I2C 초기화 완료");
   delay(100);
+
+  // I2C 스캔 추가 (디버그용)
+  Serial.println("I2C 장치 스캔 중...");
+  byte error, address;
+  int nDevices = 0;
   
+  for(address = 1; address < 127; address++) {
+    Wire.beginTransmission(address);
+    error = Wire.endTransmission();
+    
+    if (error == 0) {
+      Serial.print("I2C 장치 발견: 0x");
+      if (address < 16) Serial.print("0");
+      Serial.println(address, HEX);
+      nDevices++;
+    }
+  }
+  
+  if (nDevices == 0) {
+    Serial.println("I2C 장치가 발견되지 않았습니다!");
+  } else {
+    Serial.print("총 ");
+    Serial.print(nDevices);
+    Serial.println("개의 I2C 장치 발견");
+  }
+
   // MPU9250 연결 확인
   if (!testMPU9250Connection()) {
     Serial.println("ERROR: MPU9250 연결 실패");
+
+    // 대안 I2C 주소 시도
+    Serial.println("대안 I2C 주소 시도 중...");
+    // 일부 MPU9250 모듈은 0x69 주소를 사용
+    uint8_t altAddress = 0x69;
+    Wire.beginTransmission(altAddress);
+    if (Wire.endTransmission() == 0) {
+      Serial.println("0x69 주소에서 장치 발견됨");
+      // config.h에서 주소 변경 필요
+    }
+
     return false;
   }
   
@@ -235,7 +275,34 @@ void calibrateGyroscope() {
 
 bool readSensorData(SensorData* data) {
   if (!sensorInitialized) {
-    return false;
+    // 시뮬레이션 모드
+    simulationMode = true;
+    
+    // 가상 센서 데이터 생성
+    unsigned long currentTime = millis();
+    float t = currentTime * 0.001; // 초 단위
+    
+    data->accelX = 0.0;
+    data->accelY = 0.0;
+    data->accelZ = 9.81; // 중력
+    
+    data->gyroX = sin(t * 0.5) * 2.0; // 약간의 노이즈
+    data->gyroY = cos(t * 0.3) * 1.5;
+    data->gyroZ = sin(t * 0.7) * 1.0;
+    
+    data->magX = 25.0;
+    data->magY = 3.0;
+    data->magZ = -40.0;
+    
+    // 자세 계산 (시뮬레이션)
+    data->roll = sin(t * 0.2) * 5.0;
+    data->pitch = cos(t * 0.15) * 3.0;
+    data->yaw = t * 10.0; // 천천히 회전
+    
+    data->sensorHealthy = true;
+    data->timestamp = micros();
+    
+    return true;
   }
   
   RawSensorData rawData;
@@ -500,4 +567,16 @@ void writeByteAK8963(uint8_t subAddress, uint8_t data) {
   writeByte(MPU9250_ADDRESS, 0x27, 0x81); // I2C_SLV0_CTRL (enable + 1 byte)
   
   delay(2);
+}
+
+// sensors.cpp에 추가
+void debugPrintForPlotter(SensorData* sensorData, ControllerInput* input, MotorOutputs* outputs) {
+    Serial.print(sensorData->roll); Serial.print(",");
+    Serial.print(sensorData->pitch); Serial.print(",");
+    Serial.print(sensorData->yaw); Serial.print(",");
+    Serial.print(input->throttleNorm * 100); Serial.print(",");
+    Serial.print(outputs->motor_fl); Serial.print(",");
+    Serial.print(outputs->motor_fr); Serial.print(",");
+    Serial.print(outputs->motor_rl); Serial.print(",");
+    Serial.println(outputs->motor_rr);
 }
