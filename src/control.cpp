@@ -119,6 +119,13 @@ void updateMotorOutputs(MotorOutputs *outputs)
 
 void stopAllMotors()
 {
+  static bool lastStopState = false;
+
+  if (!lastStopState) {  // 처음 호출될 때만 메시지 출력
+    Serial.println("모든 모터 정지");
+    lastStopState = true;
+  }
+
   int stopValue = map(1000, 1000, 2000, 1638, 6553);
   ledcWrite(0, stopValue);
   ledcWrite(1, stopValue);
@@ -130,7 +137,7 @@ void stopAllMotors()
   pitchPID.integral = 0.0;
   yawPID.integral = 0.0;
 
-  Serial.println("모든 모터 정지");
+  // Serial.println("모든 모터 정지");
 }
 
 void calculateControl(SensorData *sensorData, ControllerInput *input, MotorOutputs *outputs, float deltaTime)

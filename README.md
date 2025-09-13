@@ -30,3 +30,7 @@
 	- 스마트폰/PC에서 "Shane_Drone" WiFi에 연결
 	- 브라우저에서 http://192.168.4.1 접속
 	- 시뮬레이션 데이터로 대시보드 작동 확인
+
+### 6. 2025-09-13
+	- Arduino nano esp32 compile, upload, monitor
+	- http://192.168.4.1 웹 서버 접속 완료

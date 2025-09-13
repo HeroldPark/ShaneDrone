@@ -1,5 +1,5 @@
 /*
- * config.h - DIY Pavo Pico Drone 설정 파일
+ * config.h - DIY Shane Drone 설정 파일
  * 모든 하드웨어 설정 및 상수 정의
  */
 
@@ -41,7 +41,7 @@
 // 드론 물리적 특성
 // =================================
 
-// 프레임: Pavo Pico Brushless Whoop
+// 프레임: Shane Brushless Whoop
 #define FRAME_SIZE 65        // mm (대각선 모터 거리)
 #define MOTOR_DISTANCE 0.046 // m (모터 중심간 거리)
 

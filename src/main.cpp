@@ -1,5 +1,5 @@
 /*
- * DIY Pavo Pico Drone - Arduino Nano ESP32 + MPU9250
+ * DIY Shane Drone - Arduino Nano ESP32 + MPU9250
  * BETAFPV 1102 14000KV 모터 + Walksnail Avatar HD V2
  *
  * 개발자: DIY 드론 제작자
@@ -36,6 +36,7 @@ void checkBatteryStatus(float voltage);
 void updateSystemStatus();
 void performSafetyChecks();
 void activateFailsafeMode();
+void debugSystemStatus();
 
 void setup()
 {
@@ -47,12 +48,14 @@ void setup()
   Serial.println("Arduino Nano ESP32 + MPU9250");
   Serial.println("=================================");
 
+   Serial.printf("시작 시 Free heap: %d bytes\n", ESP.getFreeHeap());
+
   // LED 초기화 (상태 표시용)
   pinMode(LED_BUILTIN, OUTPUT);
   digitalWrite(LED_BUILTIN, LOW);
 
   // 하드웨어 초기화
-  // 센서 있을 떄
+  // MPU9250 센서 있을 떄
   // if (!initializeSensors())
   // {
   //   Serial.println("ERROR: 센서 초기화 실패!");
@@ -93,6 +96,12 @@ void setup()
   Serial.println("시스템 준비 완료! (센서 상태: " + String(sensorSuccess ? "정상" : "시뮬레이션") + ")");
 
   lastLoopTime = micros();
+
+  Serial.printf("초기화 후 Free heap: %d bytes\n", ESP.getFreeHeap());
+  
+  if (ESP.getFreeHeap() < 50000) {
+    Serial.println("WARNING: 메모리 부족!");
+  }
 }
 
 void loop()
@@ -101,15 +110,17 @@ void loop()
   float deltaTime = (currentTime - lastLoopTime) / 1000000.0f;
   lastLoopTime = currentTime;
 
+  // 웹 서버 처리를 우선순위로 (매 루프마다)
+  webServer.handleClient();
+  webSocket.loop();
+
   // 메인 루프 주파수 제한 (1000Hz)
-  if (deltaTime < 0.001f)
-  {
+  if (deltaTime < 0.001f) {
     return;
   }
 
   // 1. 센서 데이터 읽기 (1000Hz)
-  if (currentTime - lastSensorRead >= SENSOR_UPDATE_INTERVAL)
-  {
+  if (currentTime - lastSensorRead >= SENSOR_UPDATE_INTERVAL) {
     readSensorData(&sensorData);
     lastSensorRead = currentTime;
 
@@ -119,8 +130,7 @@ void loop()
   }
 
   // 2. 통신 데이터 처리 (500Hz)
-  if (currentTime - lastControlUpdate >= CONTROL_UPDATE_INTERVAL)
-  {
+  if (currentTime - lastControlUpdate >= CONTROL_UPDATE_INTERVAL) {
     // 리시버 데이터 읽기
     readReceiverData(&controllerInput);
 
@@ -130,40 +140,61 @@ void loop()
     lastControlUpdate = currentTime;
   }
 
-  // 3. 제어 알고리즘 실행 (1000Hz)
-  if (systemArmed && systemReady)
-  {
-    // PID 제어 계산
-    calculateControl(&sensorData, &controllerInput, &motorOutputs, deltaTime);
+  // 3. 제어 알고리즘 실행 (수정됨)
+  static bool lastArmedState = false;
 
-    // 모터 출력 적용
+  if (systemArmed && systemReady) {
+    if (!lastArmedState) {
+      Serial.println("모터 제어 시작");
+      lastArmedState = true;
+    }
+    calculateControl(&sensorData, &controllerInput, &motorOutputs, deltaTime);
     updateMotorOutputs(&motorOutputs);
-  }
-  else
-  {
-    // 시스템이 DISARM 상태면 모터 정지
-    stopAllMotors();
+  } else {
+    if (lastArmedState) {
+      stopAllMotors();  // ARM 상태 변경될 때만 호출
+      lastArmedState = false;
+    }
   }
 
   // 4. 텔레메트리 전송 (50Hz)
-  if (currentTime - lastTelemetryUpdate >= TELEMETRY_UPDATE_INTERVAL)
-  {
+  if (currentTime - lastTelemetryUpdate >= TELEMETRY_UPDATE_INTERVAL) {
     sendTelemetryData(&sensorData, &controllerInput, batteryVoltage);
+    broadcastTelemetry();  // 여기로 이동
     lastTelemetryUpdate = currentTime;
   }
-
-  // 웹 서버 처리 추가
-  webServer.handleClient();
-  webSocket.loop();
-  
-  // 실시간 텔레메트리 브로드캐스트
-  broadcastTelemetry();
 
   // 5. 시스템 모니터링
   updateSystemStatus();
 
   // 6. 안전 체크
   performSafetyChecks();
+
+  debugSystemStatus();  // 추가
+}
+
+void debugSystemStatus() {
+  static unsigned long lastDebug = 0;
+  if (millis() - lastDebug > 5000) {  // 5초마다
+    Serial.println("\n=== 시스템 상태 ===");
+    Serial.printf("systemArmed: %s\n", systemArmed ? "true" : "false");
+    Serial.printf("systemReady: %s\n", systemReady ? "true" : "false");
+    Serial.printf("WiFi 클라이언트: %d\n", WiFi.softAPgetStationNum());
+    Serial.printf("WiFi 상태: %s\n", WiFi.status() == WL_CONNECTED ? "연결됨" : "AP 모드");
+    Serial.printf("WiFi SSID: %s\n", WiFi.softAPSSID().c_str());
+    Serial.printf("Free heap: %d bytes\n", ESP.getFreeHeap());
+    Serial.printf("배터리: %.2fV\n", batteryVoltage);
+    
+    // 클라이언트 연결 시도 감지
+    static int lastClientCount = -1;
+    int currentClients = WiFi.softAPgetStationNum();
+    if (currentClients != lastClientCount) {
+      Serial.printf(">>> 클라이언트 수 변경: %d -> %d\n", lastClientCount, currentClients);
+      lastClientCount = currentClients;
+    }
+    
+    lastDebug = millis();
+  }
 }
 
 // ARM/DISARM 체크
