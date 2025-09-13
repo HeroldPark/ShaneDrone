@@ -34,3 +34,10 @@
 ### 6. 2025-09-13
 	- Arduino nano esp32 compile, upload, monitor
 	- http://192.168.4.1 웹 서버 접속 완료
+
+###	Chrome vs Edge 문제
+	- Chrome에서 chrome://net-internals/#dns 접속하여 DNS 캐시 클리어
+	- 또는 Chrome에서 http://192.168.4.1 대신 http://192.168.4.1/ (마지막 슬래시 추가) 시도
+
+### 7. 2025-09-14
+	- communication.cpp에서 web part 분리 : web.cpp, web.h

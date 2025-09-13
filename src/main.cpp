@@ -37,6 +37,7 @@ void updateSystemStatus();
 void performSafetyChecks();
 void activateFailsafeMode();
 void debugSystemStatus();
+void communicationLoop();
 
 void setup()
 {
@@ -82,9 +83,6 @@ void setup()
     Serial.println("WARNING: 통신 초기화 실패 - 수동 모드로 전환");
   }
 
-  // 웹 서버 설정 추가
-  setupWebServer();
-
   // 제어 시스템 초기화
   initializeControl();
 
@@ -109,10 +107,6 @@ void loop()
   unsigned long currentTime = micros();
   float deltaTime = (currentTime - lastLoopTime) / 1000000.0f;
   lastLoopTime = currentTime;
-
-  // 웹 서버 처리를 우선순위로 (매 루프마다)
-  webServer.handleClient();
-  webSocket.loop();
 
   // 메인 루프 주파수 제한 (1000Hz)
   if (deltaTime < 0.001f) {
@@ -160,7 +154,6 @@ void loop()
   // 4. 텔레메트리 전송 (50Hz)
   if (currentTime - lastTelemetryUpdate >= TELEMETRY_UPDATE_INTERVAL) {
     sendTelemetryData(&sensorData, &controllerInput, batteryVoltage);
-    broadcastTelemetry();  // 여기로 이동
     lastTelemetryUpdate = currentTime;
   }
 
