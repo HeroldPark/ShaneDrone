@@ -44,3 +44,11 @@
 	- web => async(Mobile), legacy(PC)로 분리
 	- platformio.ini에서 사용하는 타겟에 따라 선택적 compile
 	- serial CLI는 차단 : communicationLoop.handleSerialCLI() - 사용하기 불편하고 의미 없다.
+
+	=> web_async_v0.1.cpp + drone_3d_viewer.html
+	=> /src/web_async.cpp, /data/index.html, /data/css/style.css, /data/js/drone-controller.js
+	=> 3D Drone Model을 적용 한  후 웹적속인 안되는 상황 발생.
+	=> spiffs를 사용하여 웹 접속하는 방식으로 변경했다.
+	=> build, upload, Serial Monitor 정상 수행
+	=> Serial Monitor 정상 출력 상태이다.
+	=> http://192.168.4.1 접속 안된다?

@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+    <title>Shane Drone</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+<div class="wrap">
+    <h1>
+        <span id="ws" class="ws"></span>Shane Drone
+        <span id="rcpill" class="rcpill">RC OFF</span>
+    </h1>
+    <div class="muted">실시간 상태 · 모바일 듀얼 스틱(왼쪽: 스로틀/요, 오른쪽: 롤/피치)</div>
+
+    <div class="row">
+        <!-- 센서 데이터 카드 -->
+        <div class="card">
+            <div>센서 측정값</div>
+            <div class="kv"><span>Roll</span><b id="roll">0.0°</b></div>
+            <div class="kv"><span>Pitch</span><b id="pitch">0.0°</b></div>
+            <div class="kv"><span>Yaw</span><b id="yaw">0.0°</b></div>
+            <div class="kv"><span>배터리</span><b id="battery">0.00V</b></div>
+            <div class="kv"><span>비행모드</span><b id="mode">—</b></div>
+            <div class="kv"><span>ARM</span><b id="arm">DISARMED</b></div>
+        </div>
+
+        <!-- 조이스틱 입력 카드 -->
+        <div class="card">
+            <div>조이스틱 입력</div>
+            <div class="kv"><span>RC Roll</span><b id="rcRoll">0.00</b></div>
+            <div class="kv"><span>RC Pitch</span><b id="rcPitch">0.00</b></div>
+            <div class="kv"><span>RC Yaw</span><b id="rcYaw">0.00</b></div>
+            <div class="kv"><span>RC Throttle</span><b id="rcThr">0%</b></div>
+        </div>
+
+        <!-- 3D 드론 시각화 카드 -->
+        <div class="card">
+            <div>드론 자세(3D)</div>
+            <div id="drone-3d-container">
+                <canvas id="drone-3d-canvas"></canvas>
+                <div class="viewer-controls">
+                    <div class="viewer-btn" onclick="resetCamera()">Reset</div>
+                    <div class="viewer-btn" onclick="toggleAutoRotate()">Auto</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 모터 출력 카드 -->
+        <div class="card">
+            <div>모터 출력</div>
+            <div class="kv">
+                <span>FL</span><b id="mflv">1000</b>
+            </div>
+            <div class="bar">
+                <div id="mfl" class="fill"></div>
+            </div>
+            
+            <div class="kv">
+                <span>FR</span><b id="mfrv">1000</b>
+            </div>
+            <div class="bar">
+                <div id="mfr" class="fill"></div>
+            </div>
+            
+            <div class="kv">
+                <span>RL</span><b id="mrlv">1000</b>
+            </div>
+            <div class="bar">
+                <div id="mrl" class="fill"></div>
+            </div>
+            
+            <div class="kv">
+                <span>RR</span><b id="mrrv">1000</b>
+            </div>
+            <div class="bar">
+                <div id="mrr" class="fill"></div>
+            </div>
+        </div>
+
+        <!-- 제어 명령 카드 -->
+        <div class="card">
+            <div>제어 & 명령</div>
+            <div class="btns">
+                <button class="b" onclick="cmd('CALIBRATE')">센서 캘리브레이션</button>
+                <button class="g" onclick="cmd('RESET_PID')">PID 리셋</button>
+                <button class="r" onclick="cmd('EMERGENCY_STOP')">비상 정지</button>
+                <button class="y" id="toggleRcBtn" onclick="toggleRc()">RC 토글</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 듀얼 스틱 오버레이 -->
+<div class="sticks">
+    <div id="stickL" class="stick">
+        <div class="base"></div>
+        <div class="knob" id="knobL"></div>
+    </div>
+    <div id="stickR" class="stick">
+        <div class="base"></div>
+        <div class="knob" id="knobR"></div>
+    </div>
+</div>
+
+<!-- 외부 라이브러리 및 스크립트 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="/js/drone-controller.js"></script>
+
+</body>
+</html>

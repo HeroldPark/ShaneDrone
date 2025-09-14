@@ -1,4 +1,5 @@
 // src/web_async.cpp - 모바일 듀얼 스틱 + RC 파이프라인 통합판
+// Drone 3D model 있는 버전 - v0.5 (외부 파일 시스템 사용)
 #include "web.h"
 
 // === Core/Net ===
@@ -9,6 +10,10 @@
 #include <ESPAsyncWebServer.h>    // HTTP
 #include <AsyncTCP.h>             // (ESP32)
 #include <ArduinoJson.h>          // v7 API
+
+// === File System ===
+#include <SPIFFS.h>               // 또는 LittleFS.h 사용 가능
+// #include <LittleFS.h>          // LittleFS 사용 시
 
 // ===== 프로젝트 외부 심볼 (기존 코드와 연결) =====
 extern bool systemArmed;
@@ -55,257 +60,45 @@ static inline String flightModeName(uint8_t m) {
   }
 }
 
-// ===== 미니 대시보드 + 듀얼 스틱(내장) HTML =====
-static const char INDEX_HTML[] PROGMEM = R"HTML(
-<!doctype html><html lang="ko"><head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Shane Drone</title>
-<style>
-  :root { --card: rgba(255,255,255,.08); --stroke: rgba(255,255,255,.18); --stick-size: clamp(180px, 42vw, 320px); } /* 스틱 크기 */
-  .stick { width: var(--stick-size); height: var(--stick-size); }
-  *{box-sizing:border-box} 
-  /* 본문을 스틱 높이만큼 위로 올려 버튼이 겹치지 않게 */
-  body{padding-bottom: calc(var(--stick-size) + 28px + env(safe-area-inset-bottom));
-  margin:0;font:16px/1.45 system-ui,Segoe UI,Roboto,Apple SD Gothic Neo,sans-serif;background:
-  linear-gradient(135deg,#1e1e2e 0%,#2a2a3e 100%);color:#fff }
-  .wrap{max-width:980px;margin:0 auto;padding:18px}
-  h1{font-size:20px;margin:0 0 8px}
-  .muted{opacity:.75;font-size:13px;margin-bottom:12px}
-  .row{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
-  .card{background:var(--card);border:1px solid var(--stroke);border-radius:14px;padding:12px;backdrop-filter:blur(8px)}
-  .kv{display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px dashed var(--stroke)}
-  .kv:last-child{border:none}
-  .bar{height:8px;background:#222;border-radius:999px;overflow:hidden}
-  .fill{height:100%;width:0%;transition:width .2s ease;background:linear-gradient(90deg,#7cf,#fc7,#f66)}
-  .ws{display:inline-block;width:10px;height:10px;border-radius:50%;vertical-align:-1px;margin-right:6px;background:#f55}
-  .ws.ok{background:#6f6}
-  .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-  button{appearance:none;border:0;border-radius:12px;padding:10px 12px;color:#001;cursor:pointer;font-weight:700}
-  .b{background:#4fc3f7}.r{background:#ff8a80}.g{background:#80e27e}.y{background:#ffd54f}
-
-  /* 세로 높이가 더 작은 폰에서 자동 축소 */
-  @media (max-height: 700px) { :root { --stick-size: clamp(160px, 34vw, 260px); } }
-  @media (max-height: 560px) { :root { --stick-size: clamp(140px, 28vw, 220px); } }
-
-  /* 상단 RC pill을 토글용으로도 쓰기 위해 포인터 표시 */
-  .rcpill { cursor: pointer; }
-
-  /* 듀얼 스틱 오버레이 */
-  .sticks{position:fixed;left:0;right:0;bottom:0;pointer-events:none;padding:12px;display:flex;justify-content:space-between;gap:12px}
-  .stick{pointer-events:auto;touch-action:none;position:relative;
-         background:rgba(255,255,255,.06);border:1px solid var(--stroke);border-radius:14px}
-  .base,.knob{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);border-radius:50%}
-  .base{width:56%;height:56%;border:1px solid rgba(255,255,255,.4)}
-  .knob{width:28%;height:28%;background:rgba(255,255,255,.9);box-shadow:0 4px 20px rgba(0,0,0,.35)}
-  .rcpill{display:inline-block;padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.12);
-          border:1px solid var(--stroke);margin-left:8px}
-  .rcpill.on{background:#80e27e;color:#003300}
-
-  /* 자세,입력값 */
-  .kv3{
-    display:grid;
-    grid-template-columns: 1fr auto auto; /* 항목 | 센서 | RC */
-    align-items:center;
-    gap:10px;
-    padding:6px 0;
-    border-bottom:1px dashed var(--stroke);
+// ===== 파일 시스템 초기화 =====
+bool initFileSystem() {
+  // SPIFFS 초기화
+  if (!SPIFFS.begin(true)) {
+    Serial.println("SPIFFS 초기화 실패!");
+    return false;
   }
-  .kv3.head{ font-weight:700; opacity:.85; border-bottom:1px solid var(--stroke); }
-</style></head><body>
-
-<div class="wrap">
-  <h1><span id="ws" class="ws"></span>Shane Drone
-    <span id="rcpill" class="rcpill">RC OFF</span>
-  </h1>
-  <div class="muted">실시간 상태 · 모바일 듀얼 스틱(왼쪽: 스로틀/요, 오른쪽: 롤/피치)</div>
-
-  <div class="row">
-    <div class="card">
-      <div>센서 측정값</div>
-      <div class="kv"><span>Roll</span><b id="roll">0.0°</b></div>
-      <div class="kv"><span>Pitch</span><b id="pitch">0.0°</b></div>
-      <div class="kv"><span>Yaw</span><b id="yaw">0.0°</b></div>
-      <div class="kv"><span>배터리</span><b id="battery">0.00V</b></div>
-      <div class="kv"><span>비행모드</span><b id="mode">—</b></div>
-      <div class="kv"><span>ARM</span><b id="arm">DISARMED</b></div>
-    </div>
-
-    <div class="card">
-      <div>조이스틱 입력</div>
-      <div class="kv"><span>RC Roll</span><b id="rcRoll">0.00</b></div>
-      <div class="kv"><span>RC Pitch</span><b id="rcPitch">0.00</b></div>
-      <div class="kv"><span>RC Yaw</span><b id="rcYaw">0.00</b></div>
-      <div class="kv"><span>RC Throttle</span><b id="rcThr">0%</b></div>
-    </div>
-
-    <!--
-    <div class="card">
-      <div>자세·입력</div>
-      <div class="kv3 head"><span>항목</span><span>센서</span><span>RC</span></div>
-
-      <div class="kv3"><span>Roll</span><b id="roll">0.0°</b><b id="rcRoll">0.00</b></div>
-      <div class="kv3"><span>Pitch</span><b id="pitch">0.0°</b><b id="rcPitch">0.00</b></div>
-      <div class="kv3"><span>Yaw</span><b id="yaw">0.0°</b><b id="rcYaw">0.00</b></div>
-      <div class="kv3"><span>Throttle</span><span>—</span><b id="rcThr">0%</b></div>
-
-      <div class="kv"><span>배터리</span><b id="battery">0.00V</b></div>
-      <div class="kv"><span>비행모드</span><b id="mode">—</b></div>
-      <div class="kv"><span>ARM</span><b id="arm">DISARMED</b></div>
-    </div>
-    -->
-
-    <div class="card">
-      <div>모터 출력</div>
-      <div class="kv"><span>FL</span><b id="mflv">1000</b></div><div class="bar"><div id="mfl" class="fill"></div></div>
-      <div class="kv"><span>FR</span><b id="mfrv">1000</b></div><div class="bar"><div id="mfr" class="fill"></div></div>
-      <div class="kv"><span>RL</span><b id="mrlv">1000</b></div><div class="bar"><div id="mrl" class="fill"></div></div>
-      <div class="kv"><span>RR</span><b id="mrrv">1000</b></div><div class="bar"><div id="mrr" class="fill"></div></div>
-    </div>
-
-    <div class="card">
-      <div>제어 & 명령</div>
-      <div class="btns">
-        <button class="b" onclick="cmd('CALIBRATE')">센서 캘리브레이션</button>
-        <button class="g" onclick="cmd('RESET_PID')">PID 리셋</button>
-        <button class="r" onclick="cmd('EMERGENCY_STOP')">비상 정지</button>
-        <button class="y" id="toggleRcBtn" onclick="toggleRc()">RC 토글</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- 듀얼 스틱 -->
-<div class="sticks">
-  <div id="stickL" class="stick"><div class="base"></div><div class="knob" id="knobL"></div></div>
-  <div id="stickR" class="stick"><div class="base"></div><div class="knob" id="knobR"></div></div>
-</div>
-
-<script>
-const $=s=>document.querySelector(s);
-let ws,tRetry,rcEnabled=false, rc={throttle:0,yaw:0,roll:0,pitch:0};
-
-// WS 연결 (80포트 /ws)
-function connectWS(){
-  ws = new WebSocket(`ws://${location.host}/ws`);
-  ws.onopen = ()=>{ $('#ws').classList.add('ok'); if(tRetry) clearTimeout(tRetry); };
-  ws.onclose = ()=>{ $('#ws').classList.remove('ok'); tRetry=setTimeout(connectWS,1200); };
-  ws.onmessage = e => { try{ update(JSON.parse(e.data||'{}')); }catch{} };
-}
-connectWS();
-
-// 폴링 백업(WS 끊기면)
-setInterval(()=>{
-  if(!ws || ws.readyState!==1){
-    fetch('/telemetry').then(r=>r.json()).then(update).catch(()=>{});
-  }
-}, 900);
-
-// UI 업데이트
-function pct(v){ return Math.max(0, Math.min(100, ((v-1000)/1000)*100 )); }
-function bar(id,val,label){ $(id).style.width = pct(val)+'%'; $(label).textContent = val; }
-
-function setText(sel, text){ const el=document.querySelector(sel); if(el) el.textContent=text; }
-
-function update(d){
-  if(d.attitude){ 
-    setText('#roll',  d.attitude.roll.toFixed(1)+'°');
-    setText('#pitch', d.attitude.pitch.toFixed(1)+'°');
-    setText('#yaw',   d.attitude.yaw.toFixed(1)+'°');
-  }
-  if(typeof d.battery!=='undefined') setText('#battery', d.battery.toFixed(2)+'V');
-  if(typeof d.mode!=='undefined')    setText('#mode', d.mode);
-  if(typeof d.armed!=='undefined')   setText('#arm', d.armed?'ARMED':'DISARMED');
   
-  if(d.motors){ 
-    bar('#mfl',d.motors.fl,'#mflv'); bar('#mfr',d.motors.fr,'#mfrv');
-    bar('#mrl',d.motors.rl,'#mrlv'); bar('#mrr',d.motors.rr,'#mrrv'); 
+  // LittleFS 사용 시:
+  // if (!LittleFS.begin(true)) {
+  //   Serial.println("LittleFS 초기화 실패!");
+  //   return false;
+  // }
+  
+  Serial.println("파일 시스템 초기화 완료");
+  
+  // 필수 파일들 존재 확인
+  if (!SPIFFS.exists("/index.html")) {
+    Serial.println("경고: /index.html 파일이 없습니다!");
   }
-  if(typeof d.rcEnabled!=='undefined'){
-    rcEnabled = !!d.rcEnabled; paintRcPill();
+  if (!SPIFFS.exists("/css/style.css")) {
+    Serial.println("경고: /css/style.css 파일이 없습니다!");
   }
-
-  // RC 표시 로직 추가
-  if (d.input) {
-    if(typeof d.input.roll==='number')   setText('#rcRoll', d.input.roll.toFixed(2));
-    if(typeof d.input.pitch==='number')  setText('#rcPitch', d.input.pitch.toFixed(2));
-    if(typeof d.input.yaw==='number')    setText('#rcYaw', d.input.yaw.toFixed(2));
-    if(typeof d.input.throttle==='number') setText('#rcThr', (d.input.throttle*100).toFixed(0)+'%');
+  if (!SPIFFS.exists("/js/drone-controller.js")) {
+    Serial.println("경고: /js/drone-controller.js 파일이 없습니다!");
   }
-
+  
+  return true;
 }
 
-// 명령 전송
-function cmd(c){
-  const p = JSON.stringify({command:c});
-  if(ws && ws.readyState===1) ws.send(p);
-  else fetch('/command',{method:'POST',headers:{'Content-Type':'application/json'},body:p}).catch(()=>{});
-}
-
-// RC 토글
-function toggleRc(){
-  rcEnabled = !rcEnabled; paintRcPill();
-  cmd(rcEnabled ? 'ENABLE_WEB_RC' : 'DISABLE_WEB_RC');
-}
-function paintRcPill(){
-  const pill = $('#rcpill');
-  pill.textContent = rcEnabled ? 'RC ON' : 'RC OFF';
-  pill.classList.toggle('on', rcEnabled);
-}
-
-// === 듀얼 스틱(내장 구현, 외부 CDN 불필요) ===
-function makeStick(rootSel, knobSel){
-  const el = $(rootSel), knob=$(knobSel);
-  const rect = ()=>el.getBoundingClientRect();
-  let active=false, cx=0, cy=0, kx=0, ky=0, maxR=0;
-  function center(){ const r=rect(); cx=r.left+r.width/2; cy=r.top+r.height/2; maxR=Math.min(r.width,r.height)*0.28; }
-  function setKnob(x,y){ knob.style.transform=`translate(${x}px,${y}px)`; }
-  function norm(dx,dy){ const r=Math.hypot(dx,dy)||1; const rr=Math.min(r,maxR); return { x:(dx/rr)*(rr/maxR), y:(dy/rr)*(rr/maxR) }; }
-  function onDown(e){ active=true; const t=(e.touches?e.touches[0]:e); center(); onMove(e); }
-  function onMove(e){
-    if(!active) return;
-    const t=(e.touches?e.touches[0]:e);
-    const dx=t.clientX-cx, dy=t.clientY-cy;
-    const v=norm(dx,dy); kx=v.x*maxR; ky=v.y*maxR; setKnob(kx,ky);
+// ===== 파일 제공 헬퍼 함수 =====
+void serveFile(AsyncWebServerRequest* request, const char* path, const char* contentType) {
+  if (SPIFFS.exists(path)) {
+    request->send(SPIFFS, path, contentType);
+  } else {
+    Serial.printf("파일을 찾을 수 없음: %s\n", path);
+    request->send(404, "text/plain", "File Not Found");
   }
-  function onUp(){ active=false; kx=ky=0; setKnob(0,0); }
-  el.addEventListener('pointerdown', onDown); el.addEventListener('pointermove', onMove);
-  el.addEventListener('pointerup', onUp); el.addEventListener('pointercancel', onUp); el.addEventListener('pointerleave', onUp);
-  el.addEventListener('touchstart', onDown,{passive:false}); el.addEventListener('touchmove', onMove,{passive:false});
-  el.addEventListener('touchend', onUp); el.addEventListener('touchcancel', onUp);
-  window.addEventListener('resize', center); center();
-  return {
-    value(){ // -1..+1
-      const nx = (maxR? kx/maxR : 0);
-      const ny = (maxR? ky/maxR : 0);
-      return {x: nx, y: ny};
-    }
-  };
 }
-
-$('#rcpill').addEventListener('click', toggleRc);
-
-const L = makeStick('#stickL','#knobL'); // 스로틀/요
-const R = makeStick('#stickR','#knobR'); // 롤/피치
-
-// 50Hz로 RC 전송
-setInterval(()=>{
-  if(!rcEnabled) return;
-  const lv=L.value(), rv=R.value();
-  // 매핑: 왼쪽 Y가 위로 갈수록 스로틀↑  (0..1), 왼쪽 X는 요(-1..+1)
-  rc.throttle = Math.max(0, Math.min(1, (-lv.y+1)/2));
-  rc.yaw      = Math.max(-1, Math.min(1, lv.x));
-  // 오른쪽 X/Y는 롤/피치(-1..+1), 화면 위쪽이 +피치
-  rc.roll     = Math.max(-1, Math.min(1, rv.x));
-  rc.pitch    = Math.max(-1, Math.min(1, -rv.y));
-
-  const payload = JSON.stringify({ rc });
-  if(ws && ws.readyState===1) ws.send(payload);
-  else fetch('/command',{method:'POST',headers:{'Content-Type':'application/json'},body: payload}).catch(()=>{});
-}, 20);
-</script>
-</body></html>
-)HTML";
 
 // ===== 내부 선언 =====
 static void handleTelemetry(AsyncWebServerRequest* req);
@@ -316,6 +109,12 @@ static void wsEvent(AsyncWebSocket* server, AsyncWebSocketClient* client, AwsEve
 namespace web {
 
   void begin() {
+    // 파일 시스템 초기화
+    if (!initFileSystem()) {
+      Serial.println("파일 시스템 초기화 실패 - 웹 서버를 시작할 수 없습니다!");
+      return;
+    }
+
     // CORS & cache
     DefaultHeaders::Instance().addHeader("Access-Control-Allow-Origin", "*");
     DefaultHeaders::Instance().addHeader("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
@@ -329,23 +128,66 @@ namespace web {
     server.on("/hotspot-detect.html", HTTP_ANY, [](AsyncWebServerRequest* r){ r->send(200,"text/html","Success"); });
     server.on("/success.txt", HTTP_ANY, [](AsyncWebServerRequest* r){ r->send(200,"text/plain","success"); });
 
-    // 정적 루트
-    server.on("/", HTTP_GET, [](AsyncWebServerRequest* r){ r->send(200, "text/html", INDEX_HTML); });
+    // === 메인 HTML 파일 서빙 ===
+    server.on("/", HTTP_GET, [](AsyncWebServerRequest* request) {
+      serveFile(request, "/index.html", "text/html");
+    });
 
+    // === CSS 파일 서빙 ===
+    server.on("/css/style.css", HTTP_GET, [](AsyncWebServerRequest* request) {
+      serveFile(request, "/css/style.css", "text/css");
+    });
+
+    // === JavaScript 파일 서빙 ===
+    server.on("/js/drone-controller.js", HTTP_GET, [](AsyncWebServerRequest* request) {
+      serveFile(request, "/js/drone-controller.js", "application/javascript");
+    });
+
+    // === 정적 파일 서빙 (선택사항: 추가 리소스들) ===
+    // 이미지, 폰트 등 추가 정적 파일들을 위한 일반적인 핸들러
+    server.serveStatic("/assets/", SPIFFS, "/assets/");
+    server.serveStatic("/images/", SPIFFS, "/images/");
+    server.serveStatic("/fonts/", SPIFFS, "/fonts/");
+
+    // === API 엔드포인트 ===
     // Telemetry / Command
     server.on("/telemetry", HTTP_GET, handleTelemetry);
     server.on("/command", HTTP_POST, [](AsyncWebServerRequest* r){}, NULL, handleCommand);
 
-    // WebSocket
+    // === WebSocket ===
     ws.onEvent(wsEvent);
     server.addHandler(&ws);
 
-    // DNS (AP에서만 효과적)
+    // === DNS (AP에서만 효과적) ===
     dns.start(53, "*", WiFi.softAPIP());
 
-    // 시작
+    // === 404 핸들러 ===
+    server.onNotFound([](AsyncWebServerRequest* request) {
+      String message = "File Not Found\n\n";
+      message += "URI: ";
+      message += request->url();
+      message += "\nMethod: ";
+      message += (request->method() == HTTP_GET) ? "GET" : "POST";
+      message += "\nArguments: ";
+      message += request->args();
+      message += "\n";
+      
+      for (uint8_t i = 0; i < request->args(); i++) {
+        message += " " + request->argName(i) + ": " + request->arg(i) + "\n";
+      }
+      
+      Serial.println("404 - " + request->url());
+      request->send(404, "text/plain", message);
+    });
+
+    // 서버 시작
     server.begin();
-    Serial.println("HTTP+WS 서버 시작됨 (포트 80, 경로 /ws)");
+    Serial.println("HTTP+WS 서버 시작됨 (포트 80, 경로 /ws) - 외부 파일 시스템 사용");
+    
+    // 메모리 사용량 출력
+    Serial.printf("사용 가능한 힙 메모리: %d bytes\n", ESP.getFreeHeap());
+    Serial.printf("SPIFFS 총 용량: %d bytes\n", SPIFFS.totalBytes());
+    Serial.printf("SPIFFS 사용 용량: %d bytes\n", SPIFFS.usedBytes());
   }
 
   void loop() {
@@ -398,14 +240,27 @@ namespace web {
     }
   }
 
-  void setRcEnabled(bool on) {
-    g_webRcEnabled = on;
-    if (!on) {
-      controllerInput.rollNorm = controllerInput.pitchNorm = controllerInput.yawNorm = 0.f;
-      controllerInput.throttleNorm = 0.f;
+  // === 유틸리티 함수들 ===
+  
+  // 파일 목록 출력 (디버깅용)
+  void listFiles() {
+    Serial.println("=== SPIFFS 파일 목록 ===");
+    File root = SPIFFS.open("/");
+    File file = root.openNextFile();
+    
+    while (file) {
+      Serial.printf("파일: /%s, 크기: %d bytes\n", file.name(), file.size());
+      file = root.openNextFile();
     }
+    Serial.println("========================");
   }
-  bool rcEnabled() { return g_webRcEnabled; }
+  
+  // 파일 시스템 정보 출력
+  void printFileSystemInfo() {
+    Serial.printf("SPIFFS 총 용량: %d bytes\n", SPIFFS.totalBytes());
+    Serial.printf("SPIFFS 사용 용량: %d bytes\n", SPIFFS.usedBytes());
+    Serial.printf("SPIFFS 여유 용량: %d bytes\n", SPIFFS.totalBytes() - SPIFFS.usedBytes());
+  }
 
 } // namespace web
 
@@ -532,8 +387,4 @@ static void wsEvent(AsyncWebSocket* /*server*/, AsyncWebSocketClient* /*client*/
     }
     default: break;
   }
-
 }
-
-
-
