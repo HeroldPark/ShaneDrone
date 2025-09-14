@@ -41,3 +41,6 @@
 
 ### 7. 2025-09-14
 	- communication.cpp에서 web part 분리 : web.cpp, web.h
+	- web => async(Mobile), legacy(PC)로 분리
+	- platformio.ini에서 사용하는 타겟에 따라 선택적 compile
+	- serial CLI는 차단 : communicationLoop.handleSerialCLI() - 사용하기 불편하고 의미 없다.

@@ -142,6 +142,100 @@ bool initializeVTX()
 	return false;
 }
 
+// ===== 시리얼 CLI =====
+static void applyRcJson(const JsonDocument& doc) {
+  // v7: const 문서에서는 JsonObjectConst 사용
+  if (!doc["rc"].is<JsonObjectConst>()) return;
+  JsonObjectConst r = doc["rc"].as<JsonObjectConst>();
+
+  // 안전한 기본값과 범위 제한
+  float thr   = r["throttle"] | 0.0f;
+  float roll  = r["roll"]     | 0.0f;
+  float pitch = r["pitch"]    | 0.0f;
+  float yaw   = r["yaw"]      | 0.0f;
+
+  extern ControllerInput controllerInput;
+  controllerInput.rollNorm     = constrain(roll,  -1.f, 1.f);
+  controllerInput.pitchNorm    = constrain(pitch, -1.f, 1.f);
+  controllerInput.yawNorm      = constrain(yaw,   -1.f, 1.f);
+  controllerInput.throttleNorm = constrain(thr,    0.f, 1.f);
+}
+
+static void handleSerialCLI() {
+  // 한 줄 단위로 처리 (NL/CR 모두 허용)
+  while (Serial.available()) {
+    static String line;
+    char c = (char)Serial.read();
+    if (c == '\r') continue;
+    if (c != '\n') { line += c; if (line.length() < 512) return; }
+    // 개행을 만났거나 길이 제한
+    line.trim();
+    if (line.length() == 0) { line = ""; return; }
+
+    // 1) JSON 명령 지원: {"command":"..."}, {"rc":{"throttle":0.5,...}}
+    if (line[0] == '{') {
+      JsonDocument doc;
+      auto err = deserializeJson(doc, line);
+      if (!err) {
+        if (doc["command"].is<const char*>()) {
+          const char* cmd = doc["command"];
+          if      (!strcmp(cmd,"CALIBRATE"))          { calibrateSensors();          Serial.println("[OK] CALIBRATE"); }
+          else if (!strcmp(cmd,"RESET_PID"))          { resetPIDIntegrals();         Serial.println("[OK] RESET_PID"); }
+          else if (!strcmp(cmd,"EMERGENCY_STOP"))     { systemArmed=false; stopAllMotors(); Serial.println("[OK] EMERGENCY_STOP"); }
+          else if (!strcmp(cmd,"ENABLE_WEB_RC"))      { web::setRcEnabled(true);     Serial.println("[OK] WEB_RC ON"); }
+          else if (!strcmp(cmd,"DISABLE_WEB_RC"))     { web::setRcEnabled(false);    Serial.println("[OK] WEB_RC OFF"); }
+          else { Serial.println("[ERR] unknown command"); }
+        }
+        if (doc["rc"].is<JsonObject>()) {
+          applyRcJson(doc);
+          Serial.printf("[RC] thr=%.2f roll=%.2f pitch=%.2f yaw=%.2f\n",
+            controllerInput.throttleNorm, controllerInput.rollNorm,
+            controllerInput.pitchNorm, controllerInput.yawNorm);
+        }
+      } else {
+        Serial.println("[ERR] JSON parse");
+      }
+      line = "";
+      return;
+    }
+
+    // 2) 텍스트 명령 (공백 무시, 대소문자 무시)
+    String u = line; u.toUpperCase();
+    if      (u == "CALIBRATE")          { calibrateSensors();          Serial.println("[OK] CALIBRATE"); }
+    else if (u == "RESET_PID")          { resetPIDIntegrals();         Serial.println("[OK] RESET_PID"); }
+    else if (u == "EMERGENCY_STOP" || u == "E_STOP") { systemArmed=false; stopAllMotors(); Serial.println("[OK] EMERGENCY_STOP"); }
+    else if (u == "ENABLE_WEB_RC" || u == "RC ON")   { web::setRcEnabled(true);  Serial.println("[OK] WEB_RC ON"); }
+    else if (u == "DISABLE_WEB_RC"|| u == "RC OFF")  { web::setRcEnabled(false); Serial.println("[OK] WEB_RC OFF"); }
+    else if (u.startsWith("RC ")) {
+      // 예: RC 0.50 0.10 -0.05 0.20  => thr roll pitch yaw
+      float thr, roll, pitch, yaw;
+      if (sscanf(line.c_str()+3, "%f %f %f %f", &thr,&roll,&pitch,&yaw) == 4) {
+        controllerInput.throttleNorm = constrain(thr,  0.f, 1.f);
+        controllerInput.rollNorm     = constrain(roll, -1.f, 1.f);
+        controllerInput.pitchNorm    = constrain(pitch,-1.f, 1.f);
+        controllerInput.yawNorm      = constrain(yaw,  -1.f, 1.f);
+        Serial.printf("[RC] thr=%.2f roll=%.2f pitch=%.2f yaw=%.2f\n",
+          controllerInput.throttleNorm, controllerInput.rollNorm,
+          controllerInput.pitchNorm, controllerInput.yawNorm);
+      } else {
+        Serial.println("[ERR] RC format: RC <thr 0..1> <roll -1..1> <pitch -1..1> <yaw -1..1>");
+      }
+    }
+    else if (u == "HELP" || u == "?") {
+      Serial.println("Commands:");
+      Serial.println("  CALIBRATE | RESET_PID | EMERGENCY_STOP");
+      Serial.println("  ENABLE_WEB_RC | DISABLE_WEB_RC | RC ON | RC OFF");
+      Serial.println("  RC <thr 0..1> <roll -1..1> <pitch -1..1> <yaw -1..1>");
+      Serial.println("  JSON: {\"command\":\"...\"} or {\"rc\":{\"throttle\":0.5,\"roll\":0.1,\"pitch\":0,\"yaw\":-0.2}}");
+    }
+    else {
+      Serial.println("[ERR] unknown (type HELP)");
+    }
+
+    line = "";
+  }
+}
+
 void readReceiverData(ControllerInput *input)
 {
 	if (!readSBUSData())
@@ -305,6 +399,9 @@ void communicationLoop()
 {
   // 기존 루프 처리들 ...
   handleWiFiCommands();
+
+  // ✅ 시리얼 CLI 처리
+//   handleSerialCLI();
 
   // ✅ 웹 서버 요청/웹소켓 이벤트 처리 + 주기 브로드캐스트
   web::loop();

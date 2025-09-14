@@ -1,4 +1,5 @@
-// web.cpp - HTTP 서버 & WebSocket 전담
+// web_legacy.cpp - HTTP 서버 & WebSocket 전담
+// PC 버전
 #include "web.h"
 
 #include <WebServer.h>

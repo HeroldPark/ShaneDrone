@@ -104,6 +104,9 @@ void setup()
 
 void loop()
 {
+  // 웹/소켓 처리는 프레임 제한과 무관하게 매 루프 처리
+  communicationLoop();
+
   unsigned long currentTime = micros();
   float deltaTime = (currentTime - lastLoopTime) / 1000000.0f;
   lastLoopTime = currentTime;
