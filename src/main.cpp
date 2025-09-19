@@ -13,6 +13,8 @@
 #include "communication.h"
 #include <cmath>
 
+#define LED_BUILTIN 13      // 내장 LED (안전)
+
 // 전역 변수
 DroneState droneState;
 SensorData sensorData;

@@ -52,3 +52,30 @@
 	=> build, upload, Serial Monitor 정상 수행
 	=> Serial Monitor 정상 출력 상태이다.
 	=> http://192.168.4.1 접속 안된다?
+
+### 8. 2025-09-15
+	
+# SPIFFS 이미지만 빌드
+pio run --target buildfs --environment arduino_nano_esp32-mobile
+
+# 모든 터미널과 모니터링 프로그램 종료 후
+pio pkg exec --package tool-esptoolpy -- esptool.py --chip esp32s3 --port COM10 --baud 115200 write_flash 0x290000 .pio\build\arduino_nano_esp32-mobile\spiffs.bin
+
+### 9. 2025-09-20
+	- 3D model 없이 정상 동작하는 버전
+	- web_async.cpp에 html, css, cpp 혼재
+```
+=== 시스템 상태 ===
+systemArmed: false
+systemReady: true
+WiFi 클라이언트: 1
+WiFi 상태: AP 모드
+WiFi SSID: Shane_Drone
+Free heap: 229840 bytes
+배터리: 0.09V
+[RC APPLY] thr=0.50 roll=0.00 pitch=0.00 yaw=0.00
+[RC APPLY] thr=0.50 roll=0.00 pitch=0.00 yaw=0.00
+[RC APPLY] thr=0.50 roll=0.00 pitch=0.00 yaw=0.00
+[RC APPLY] thr=0.50 roll=0.00 pitch=0.00 yaw=0.00
+WARNING: 센서 오류 감지
+```
