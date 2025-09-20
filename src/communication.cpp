@@ -3,11 +3,11 @@
  * SBUS 수신기, WiFi 텔레메트리, Walksnail Avatar HD V2 연동
  */
 
-#include "communication.h"
-#include "config.h"
-#include "control.h"
-#include "sensors.h"
-#include "web.h"              // ✅ 추가: 분리된 웹 모듈
+#include "../include/communication.h"
+#include "../include/config.h"
+#include "../include/control.h"
+#include "../include/sensors.h"
+#include "../include/web.h"              // ✅ 추가: 분리된 웹 모듈
 #include <cmath>
 
 // SBUS 관련 변수

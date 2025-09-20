@@ -1,14 +1,14 @@
 // web_legacy.cpp - HTTP 서버 & WebSocket 전담
 // PC 버전
-#include "web.h"
+#include "../include/web.h"
+#include "../include/config.h"
+#include "../include/control.h"
+#include "../include/sensors.h"
 
 #include <WebServer.h>
 #include <WebSocketsServer.h>
 #include <ArduinoJson.h>
 
-#include "config.h"
-#include "control.h"
-#include "sensors.h"
 
 // ===== 내부 상태/참조 =====
 

@@ -3,8 +3,8 @@
  * BETAFPV 1102 14000KV 모터에 최적화된 제어 로직
  */
 
-#include "control.h"
-#include "config.h"
+#include "../include/control.h"
+#include "../include/config.h"
 #include <cmath>
 
 // PID 제어기 구조체

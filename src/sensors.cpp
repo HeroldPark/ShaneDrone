@@ -3,8 +3,8 @@
  * IMU 데이터 읽기, 필터링, 캘리브레이션
  */
 
-#include "sensors.h"
-#include "config.h"
+#include "../include/sensors.h"
+#include "../include/config.h"
 #include <Arduino.h>
 
 // 전역 변수

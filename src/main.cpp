@@ -7,10 +7,10 @@
  * 날짜: 2025.08
  */
 
-#include "config.h"
-#include "control.h"
-#include "sensors.h"
-#include "communication.h"
+#include "../include/config.h"
+#include "../include/control.h"
+#include "../include/sensors.h"
+#include "../include/communication.h"
 #include <cmath>
 
 #define LED_BUILTIN 13      // 내장 LED (안전)

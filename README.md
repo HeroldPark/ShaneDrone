@@ -79,3 +79,12 @@ Free heap: 229840 bytes
 [RC APPLY] thr=0.50 roll=0.00 pitch=0.00 yaw=0.00
 WARNING: 센서 오류 감지
 ```
+
+	- web_async.cpp에서 html+javascript 코드 분리
+	- SPIFFS or LittleFS를 사용한 외부 index.html, script.js, css를 사용하는 버젼은 안된다.
+	- 아두이노에서 실행하기 어렵다.(부하가 많이 걸린다. /data/* 여기 소스 사용)
+	- web_async.cpp, drone_simple_html.h로 분리하여 사용
+	- drone_3d_html.h, drone_simple_html.h 사용은 platfromio.ini에서 옵션으로 선택하게 함.
+	- web_async.cpp 대신 web_async_working.cpp 사용 가능 : platfromio.ini에서 옵션으로 선택
+	- drone_3d_html.h 사용은 수정이 필요하다.(그냥 시각화만 되고 있다.)
+	=> 앞으로 조이스틱 움직임을 정교하게 디버깅 하는 작업 진행

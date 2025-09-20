@@ -8,7 +8,7 @@
 #include "config.h"
 #include <WiFi.h>
 #include <WebServer.h>
-#include <WebSocketsServer.h>
+// #include <WebSocketsServer.h>
 #include <ArduinoJson.h>
 
 // 통신 시스템 초기화
@@ -24,7 +24,7 @@ void handleTelemetryData();
 void handleCommand();
 void handleNotFound();
 void broadcastTelemetry();
-void webSocketEvent(uint8_t num, WStype_t type, uint8_t* payload, size_t length);
+// void webSocketEvent(uint8_t num, WStype_t type, uint8_t* payload, size_t length);
 
 // 수신기 데이터 처리
 void readReceiverData(ControllerInput *input);
@@ -56,7 +56,7 @@ void logFlightData(SensorData *sensorData, ControllerInput *input, MotorOutputs 
 // 전역 변수 선언 (extern)
 extern bool systemArmed;
 extern WebServer webServer;
-extern WebSocketsServer webSocket;
+// extern WebSocketsServer webSocket;
 
 // 전역 데이터 변수들 추가
 extern SensorData sensorData;
