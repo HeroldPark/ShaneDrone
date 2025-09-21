@@ -1,0 +1,17 @@
+/* web/style.css */
+* { box-sizing: border-box; }
+body { margin: 0; font-family: ui-sans-serif, system-ui, AppleSDGothicNeo, Segoe UI, Roboto, sans-serif; background:#f7f8fb; color:#111; }
+header { position: sticky; top:0; background:white; border-bottom:1px solid #eaecef; padding:12px 16px; }
+h1 { margin:0 0 8px 0; font-size:20px; }
+.status { display:flex; gap:12px; font-size:14px; color:#333; flex-wrap:wrap; }
+
+main { padding:16px; max-width:980px; margin:0 auto; }
+.cards { display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:16px; margin-bottom:16px; }
+.card { background:white; border:1px solid #eaecef; border-radius:16px; padding:16px; box-shadow:0 4px 12px rgba(0,0,0,.04); }
+.card h2 { margin:0 0 8px 0; font-size:16px; }
+label { display:block; font-size:13px; margin:8px 0; }
+input[type="range"] { width:100%; }
+.row { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+button { padding:10px 12px; border:0; border-radius:12px; background:#2b7fff; color:white; cursor:pointer; font-weight:600; }
+button.danger { background:#ff3b30; }
+button:active { transform: translateY(1px); }

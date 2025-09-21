@@ -88,3 +88,26 @@ WARNING: 센서 오류 감지
 	- web_async.cpp 대신 web_async_working.cpp 사용 가능 : platfromio.ini에서 옵션으로 선택
 	- drone_3d_html.h 사용은 수정이 필요하다.(그냥 시각화만 되고 있다.)
 	=> 앞으로 조이스틱 움직임을 정교하게 디버깅 하는 작업 진행
+
+### 10. 2025-09-21
+ShaneDrone/
+├─ platformio.ini
+├─ src/
+│  ├─ main.cpp
+│  └─ web_async.cpp        // 아래 새 버전으로 교체
+├─ include/
+│  └─ web.h                // (기존과 동일 가정)
+├─ web/                   // ← LittleFS에 올라갈 웹자원
+│  ├─ index.html
+│  ├─ style.css
+│  └─ app.js
+
+### esptool로 upload 변경하면 오류 발생
+### ; 펌웨어와 파일시스템 업로드는 반드시 같은 env 로 실행
+### ; pio run -e arduino_nano_esp32-mobile -t upload      # 펌웨어
+### ; pio run -e arduino_nano_esp32-mobile -t uploadfs    # LittleFS(web/)
+
+Serial port COM6
+
+A fatal error occurred: Could not open COM6, the port is busy or doesn't exist.
+(could not open port 'COM6': OSError(22, '세마포 제한 시간이 만료되었습니다.', None, 121))

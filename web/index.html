@@ -1,0 +1,62 @@
+<!-- web/index.html -->
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Drone Web Console</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header>
+    <h1>Drone Web Console</h1>
+    <div class="status">
+      <span id="armed">ARMED: -</span>
+      <span id="mode">MODE: -</span>
+      <span id="battery">BAT: - V</span>
+      <span id="rc">RC: off</span>
+    </div>
+  </header>
+
+  <main>
+    <section class="cards">
+      <div class="card">
+        <h2>Attitude</h2>
+        <p>Roll: <span id="roll">-</span></p>
+        <p>Pitch: <span id="pitch">-</span></p>
+        <p>Yaw: <span id="yaw">-</span></p>
+      </div>
+      <div class="card">
+        <h2>Gyro</h2>
+        <p>X: <span id="gx">-</span></p>
+        <p>Y: <span id="gy">-</span></p>
+        <p>Z: <span id="gz">-</span></p>
+      </div>
+      <div class="card">
+        <h2>Motors</h2>
+        <p>FL: <span id="mfl">-</span> / FR: <span id="mfr">-</span></p>
+        <p>RL: <span id="mrl">-</span> / RR: <span id="mrr">-</span></p>
+      </div>
+      <div class="card">
+        <h2>RC (Demo)</h2>
+        <label>Throttle <input id="throttle" type="range" min="0" max="100" value="0"></label>
+        <label>Roll <input id="rollIn" type="range" min="-100" max="100" value="0"></label>
+        <label>Pitch <input id="pitchIn" type="range" min="-100" max="100" value="0"></label>
+        <label>Yaw <input id="yawIn" type="range" min="-100" max="100" value="0"></label>
+        <div class="row">
+          <button id="rcOn">Enable RC</button>
+          <button id="rcOff">Disable RC</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="row">
+      <button data-cmd="CALIBRATE">CALIBRATE</button>
+      <button data-cmd="RESET_PID">RESET PID</button>
+      <button data-cmd="EMERGENCY_STOP" class="danger">EMERGENCY STOP</button>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>
