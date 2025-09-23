@@ -128,3 +128,4 @@ A fatal error occurred: Could not open COM6, the port is busy or doesn't exist.
 	- Shane Drone Control 설치 완료
 	- Serial Port 연결 오류 => upload_port=COM*, monitor_port=COM* 으로 auto detect로 설정
 	- RC 토글 : RC ON 안되는 상태
+![현재 상태 화면](./docs/images/화면_캡처_2025-09-23.jpg)
