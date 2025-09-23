@@ -97,17 +97,34 @@ ShaneDrone/
 │  └─ web_async.cpp        // 아래 새 버전으로 교체
 ├─ include/
 │  └─ web.h                // (기존과 동일 가정)
-├─ web/                   // ← LittleFS에 올라갈 웹자원
+├─ data_running/           // ← LittleFS에 올라가는 기본 web
 │  ├─ index.html
 │  ├─ style.css
-│  └─ app.js
+   ├─ app.js
+│  └─ connecttest.txt
+├─ data/                   // ← LittleFS에 올라가는 Shane Drone Control
+│  ├─ index.html
+│  ├─ style.css
+   ├─ app.js
+
 
 ### esptool로 upload 변경하면 오류 발생
 ### ; 펌웨어와 파일시스템 업로드는 반드시 같은 env 로 실행
 ### ; pio run -e arduino_nano_esp32-mobile -t upload      # 펌웨어
-### ; pio run -e arduino_nano_esp32-mobile -t uploadfs    # LittleFS(web/)
+### ; pio run -e arduino_nano_esp32-mobile -t uploadfs    # LittleFS(data/)
+
+### ; pio run -e arduino_nano_esp32-mobile -t uploadfs --upload-port COM7
 
 Serial port COM6
 
 A fatal error occurred: Could not open COM6, the port is busy or doesn't exist.
 (could not open port 'COM6': OSError(22, '세마포 제한 시간이 만료되었습니다.', None, 121))
+
+### 11. 2025-09-23
+	- LittleFS로 구축 성공.
+	- /data 대신하여 /web 설정은 안된다.(LitteFS 인식하지 못한다.)
+	- 위의 펨웨어 upload, LittleFS uploadfs 각각 실행
+	- data/index.html, style.css, app.js 필수
+	- Shane Drone Control 설치 완료
+	- Serial Port 연결 오류 => upload_port=COM*, monitor_port=COM* 으로 auto detect로 설정
+	- RC 토글 : RC ON 안되는 상태

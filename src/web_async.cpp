@@ -43,14 +43,41 @@ static void handleTelemetry(AsyncWebServerRequest* req);
 static void handleCommand(AsyncWebServerRequest* req, uint8_t* data, size_t len, size_t index, size_t total);
 static void wsEvent(AsyncWebSocket* server, AsyncWebSocketClient* client, AwsEventType type, void* arg, uint8_t* data, size_t len);
 
+// === MIME 타입 헬퍼 ===
+static String contentTypeFor(const String& path) {
+  if (path.endsWith(".html") || path.endsWith(".htm")) return "text/html";
+  if (path.endsWith(".css"))  return "text/css";
+  if (path.endsWith(".js"))   return "application/javascript";
+  if (path.endsWith(".json")) return "application/json";
+  if (path.endsWith(".png"))  return "image/png";
+  if (path.endsWith(".jpg") || path.endsWith(".jpeg")) return "image/jpeg";
+  if (path.endsWith(".svg"))  return "image/svg+xml";
+  if (path.endsWith(".gz"))   return "application/octet-stream";
+  if (path.endsWith(".txt"))  return "text/plain";
+  return "application/octet-stream";
+}
+
+// === FS 디버그(선택) ===
+static String listLittleFsRoot() {
+  String out = "[LittleFS]\\n";
+  File root = LittleFS.open("/");
+  if (!root || !root.isDirectory()) return out + "- (not a dir)\\n";
+  File f = root.openNextFile();
+  while (f) {
+    out += String(f.name()) + " (" + String(f.size()) + " bytes)\\n";
+    f = root.openNextFile();
+  }
+  return out;
+}
+
 namespace web {
 
   void begin() {
     Serial.println("[WEB] Initializing server...");
 
-    if (!LittleFS.begin(true)) {
-        Serial.println("LittleFS Mount Failed");
-        return;
+    if (!LittleFS.begin(false)) {
+        Serial.println("LittleFS mount failed. Formatting...");
+        LittleFS.begin(true);  // 최초 포맷 1회 허용
     }
 
     server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
@@ -59,12 +86,38 @@ namespace web {
     server.on("/style.css", HTTP_GET, [](AsyncWebServerRequest *request){
         request->send(LittleFS, "/style.css", "text/css");
     });
-    server.on("/app.js", HTTP_GET, [](AsyncWebServerRequest *request){
-        request->send(LittleFS, "/app.js", "application/javascript");
+    server.on("/script.js", HTTP_GET, [](AsyncWebServerRequest *request){
+        request->send(LittleFS, "/script.js", "application/javascript");
     });
 
     // 또는 전체 static 매핑
-    server.serveStatic("/", LittleFS, "/");
+    server.serveStatic("/", LittleFS, "/")
+      .setDefaultFile("index.html");   // / → /index.html
+
+    // FS 목록 보기(선택): http://192.168.4.1/fs
+    server.on("/fs", HTTP_GET, [](AsyncWebServerRequest* r){
+      r->send(200, "text/plain", listLittleFsRoot());
+    });
+
+    // 존재하지 않는 경로 처리: /littlefs/* → /* 로 리라이트, 없으면 /index.html
+    server.onNotFound([](AsyncWebServerRequest* r){
+      String path = r->url();              // 예: /littlefs/connecttest.txt
+      const String prefix = "/littlefs";
+      if (path.startsWith(prefix)) {
+        path = path.substring(prefix.length()); // "/connecttest.txt"
+        if (path.isEmpty()) path = "/";
+      }
+      if (path == "/") {
+        r->send(LittleFS, "/index.html", "text/html");
+        return;
+      }
+      if (LittleFS.exists(path)) {
+        r->send(LittleFS, path, contentTypeFor(path));
+        return;
+      }
+      // SPA 폴백
+      r->send(LittleFS, "/index.html", "text/html");
+    });
 
     // 캡티브 포털 호환(안드로이드 등)
     server.on("/generate_204", HTTP_ANY, [](AsyncWebServerRequest* r){ r->send(204); });
@@ -85,6 +138,8 @@ namespace web {
     server.begin();
     Serial.println("[WEB] Server started on :80");
     Serial.print("[WEB] AP IP: "); Serial.println(WiFi.softAPIP());
+
+    Serial.println(listLittleFsRoot());
   }
 
   void loop() {

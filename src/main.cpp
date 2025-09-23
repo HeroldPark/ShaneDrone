@@ -123,9 +123,21 @@ void loop()
     readSensorData(&sensorData);
     lastSensorRead = currentTime;
 
-    // 배터리 전압 모니터링
-    batteryVoltage = readBatteryVoltage();
+    // 배터리 전압 모니터링 (아웃라이어 방어 + 간단 EMA)
+    static float prevBatt = 0.0f;
+    float v = readBatteryVoltage();
+
+    // 0.2V 미만은 노이즈로 간주 → 이전값 유지
+    if (v < 0.2f && prevBatt > 0.0f) v = prevBatt;
+
+    // 간단한 EMA 필터로 튐 완화
+    const float alpha = 0.15f;
+    if (prevBatt <= 0.0f) prevBatt = v;
+    batteryVoltage = alpha * v + (1.0f - alpha) * prevBatt;
+    prevBatt = batteryVoltage;
+
     checkBatteryStatus(batteryVoltage);
+
   }
 
   // 2. 통신 데이터 처리 (500Hz)
@@ -276,25 +288,28 @@ void updateSystemStatus()
 void performSafetyChecks()
 {
   static unsigned long lastSensorCheck = 0;
+  static bool lastSensorOk = true;  // ← 추가: 이전 상태 기억
   unsigned long currentTime = millis();
 
-  if (currentTime - lastSensorCheck > 5000)
-  {
-    if (!checkSensorHealth())
-    {
-      Serial.println("WARNING: 센서 오류 감지");
-      if (systemArmed)
-      {
-        systemArmed = false;
-        stopAllMotors();
-        Serial.println("센서 오류로 인한 자동 DISARM");
+  if (currentTime - lastSensorCheck > 5000) {
+    bool ok = checkSensorHealth();
+    if (ok != lastSensorOk) {
+      if (ok) {
+        Serial.println("센서 복구");
+      } else {
+        Serial.println("WARNING: 센서 오류 감지");
       }
+      lastSensorOk = ok;
+    }
+    if (!ok && systemArmed) {
+      systemArmed = false;
+      stopAllMotors();
+      Serial.println("센서 오류로 인한 자동 DISARM");
     }
     lastSensorCheck = currentTime;
   }
 
-  if (isReceiverTimeout() && systemArmed)
-  {
+  if (isReceiverTimeout() && systemArmed) {
     Serial.println("통신 타임아웃 - 안전 모드 활성화");
     activateFailsafeMode();
   }

@@ -7,7 +7,7 @@
 
 void setup() {
     Serial.begin(115200);
-    Serial.println("시간,CPU온도,메모리사용률,가상센서값");
+    Serial.println("시간, CPU온도, 메모리사용률, 가상센서값");
 }
 
 void loop() {

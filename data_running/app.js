@@ -1,4 +1,4 @@
-// web/app.js
+// data/app.js
 (function(){
   const $ = (id) => document.getElementById(id);
 
