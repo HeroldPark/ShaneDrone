@@ -1,0 +1,72 @@
+// drone_css.h - CSS 스타일만 포함
+#ifndef DRONE_CSS_H
+#define DRONE_CSS_H
+
+const char DRONE_CSS[] PROGMEM = R"CSS(
+*{margin:0;padding:0;box-sizing:border-box}
+body{font:14px/1.5 system-ui,-apple-system,sans-serif;background:#0a0a0a;color:#fff;overflow:hidden}
+#canvas3d{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1}
+.overlay{position:fixed;z-index:10;background:rgba(0,0,0,0.85);border-radius:8px;padding:10px;backdrop-filter:blur(10px)}
+.top-left{top:10px;left:10px;min-width:180px}
+.top-right{top:10px;right:10px;min-width:180px}
+.left-below{top:120px;left:10px;min-width:180px}
+.right-below{top:120px;right:10px;min-width:180px}
+.bottom-center{bottom:230px;left:50%;transform:translateX(-50%);min-width:200px}
+h3{color:#4fc3f7;margin:0 0 8px;font-size:14px}
+.kv{display:flex;justify-content:space-between;padding:3px 0;font-size:12px}
+.kv span:first-child{color:rgba(255,255,255,0.7)}
+.kv b{color:#4fc3f7}
+.motor-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
+.motor-item{background:rgba(255,255,255,0.05);padding:6px;border-radius:6px;text-align:center;font-size:11px}
+.motor-bar{height:4px;background:#333;border-radius:2px;overflow:hidden;margin:3px 0}
+.motor-fill{height:100%;background:linear-gradient(90deg,#4fc3f7,#29b6f6);transition:width 0.2s}
+.btns{display:flex;flex-wrap:nowrap;gap:6px;margin-top:8px;justify-content:center}
+button{padding:6px 10px;border:0;border-radius:6px;background:#4fc3f7;color:#000;font-weight:600;cursor:pointer;font-size:12px}
+button:hover{background:#29b6f6}
+.danger{background:#f44336}
+.danger:hover{background:#e53935}
+.success{background:#4caf50}
+.ws{display:inline-block;width:8px;height:8px;border-radius:50%;background:#f44336;margin-right:6px}
+.ws.ok{background:#4caf50}
+.sticks{position:fixed;bottom:10px;left:0;right:0;display:flex;justify-content:space-between;padding:0 20px;z-index:20}
+.stick{width:calc(50vw - 30px);height:200px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);border-radius:12px;position:relative;touch-action:none}
+.knob{width:60px;height:60px;background:radial-gradient(circle,#4fc3f7,#1976d2);border-radius:50%;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);box-shadow:0 4px 12px rgba(0,0,0,0.5)}
+.rcpill{display:inline-block;padding:3px 8px;border-radius:10px;background:rgba(255,255,255,0.1);margin-left:8px;cursor:pointer;font-size:10px}
+.rcpill.on{background:#4caf50;color:#000}
+
+@media (max-width: 768px) {
+  .overlay{padding:8px;border-radius:6px}
+  .top-left{top:5px;left:5px;min-width:150px}
+  .top-right{top:5px;right:5px;min-width:150px}
+  .left-below{top:100px;left:5px;min-width:150px}
+  .right-below{top:100px;right:5px;min-width:150px}
+  .bottom-center{bottom:200px;left:50%;transform:translateX(-50%);min-width:150px}
+  h3{font-size:13px;margin:0 0 6px}
+  .kv{font-size:11px;padding:2px 0}
+  .motor-item{padding:4px;font-size:10px}
+  .motor-bar{height:3px}
+  button{padding:5px 8px;font-size:11px}
+  .sticks{bottom:5px;padding:0 10px}
+  .stick{width:calc(50vw - 20px);height:180px}
+  .knob{width:50px;height:50px}
+  .rcpill{font-size:9px;padding:2px 6px}
+}
+
+@media (max-width: 480px) {
+  .overlay{padding:6px}
+  .top-left{min-width:120px}
+  .top-right{min-width:120px}
+  .left-below{min-width:120px}
+  .right-below{min-width:120px}
+  .bottom-center{bottom:180px;min-width:120px}
+  h3{font-size:12px}
+  .kv{font-size:10px}
+  .motor-item{font-size:9px}
+  button{padding:4px 6px;font-size:10px}
+  .sticks{padding:0 5px}
+  .stick{width:calc(50vw - 15px);height:160px}
+  .knob{width:40px;height:40px}
+}
+)CSS";
+
+#endif // DRONE_CSS_H

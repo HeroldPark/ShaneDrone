@@ -1,4 +1,5 @@
-// web_async.cpp - 분리된 HTML/CSS/JS 헤더 파일 사용 버전
+// web_async.cpp - HTML이 분리된 깔끔한 버전
+// drone_3d_html 또는 drone_simple_html.h 사용 버젼
 #include "../include/web.h"
 #include <WiFi.h>
 #include <DNSServer.h>
@@ -6,11 +7,9 @@
 #include <AsyncTCP.h>
 #include <ArduinoJson.h>
 
-// 분리된 헤더 파일들 포함
-#include "../include/drone_html.h"      // HTML 구조
-#include "../include/drone_css.h"       // CSS 스타일
-#include "../include/drone_js.h"        // JavaScript 코드
-#include "../include/drone_simple_html.h"  // 간단한 버전 (필요시)
+// HTML 파일 포함 (선택적)
+#include "../include/drone_3d_html.h"  // 3D 버전 사용 시
+#include "../include/drone_simple_html.h"  // 간단한 버전 사용 시
 
 // External symbols
 extern bool systemArmed;
@@ -46,13 +45,8 @@ static bool g_webRcEnabled = false;
 static unsigned long g_lastRcMs = 0;
 static const unsigned long RC_TIMEOUT_MS = 500;
 
-// 인터페이스 타입 설정
-enum WebInterfaceType {
-  WEB_INTERFACE_SIMPLE = 0,
-  WEB_INTERFACE_3D = 1
-};
-
-static WebInterfaceType g_interfaceType = WEB_INTERFACE_3D; // 기본값
+// If you want other drone listing for debug, define this
+#define WEB_DEBUG_FS
 
 // Flight mode name helper
 static inline String flightModeName(uint8_t m) {
@@ -64,24 +58,12 @@ static inline String flightModeName(uint8_t m) {
   }
 }
 
-// HTML 조합 함수
-String buildCompleteHTML() {
-  String html = String(DRONE_HTML);
-  html.replace("%CSS_CONTENT%", DRONE_CSS);
-  html.replace("%JS_CONTENT%", DRONE_JS);
-  return html;
-}
-
 // Handler declarations
 static void handleTelemetry(AsyncWebServerRequest* req);
 static void handleCommand(AsyncWebServerRequest* req, uint8_t* data, size_t len, size_t index, size_t total);
 static void wsEvent(AsyncWebSocket* server, AsyncWebSocketClient* client, AwsEventType type, void* arg, uint8_t* data, size_t len);
 
 namespace web {
-
-  void setInterfaceType(WebInterfaceType type) {
-    g_interfaceType = type;
-  }
 
   void begin() {
     Serial.println("Initializing web server...");
@@ -92,67 +74,15 @@ namespace web {
     server.on("/generate_204", HTTP_ANY, [](AsyncWebServerRequest* r){ r->send(204); });
     server.on("/gen_204", HTTP_ANY, [](AsyncWebServerRequest* r){ r->send(204); });
     
-    // Main page - 분리된 헤더 파일들을 조합하여 전송
+    // Main page - HTML from header file
     server.on("/", HTTP_GET, [](AsyncWebServerRequest* r){ 
-      if (g_interfaceType == WEB_INTERFACE_3D) {
-        // 3D 인터페이스: 분리된 파일들을 조합
-        String completeHTML = buildCompleteHTML();
-        r->send(200, "text/html", completeHTML);
-      } else {
-        // Simple 인터페이스: 기존 단일 파일
+      // 헤더 파일에서 가져온 HTML 사용
+      #ifdef USE_DRONE_3D_HTML
+        r->send(200, "text/html", DRONE_3D_HTML);
+      #else
         r->send(200, "text/html", DRONE_SIMPLE_HTML);
-      }
+      #endif
     });
-    
-    // 인터페이스 전환 엔드포인트
-    server.on("/interface/3d", HTTP_GET, [](AsyncWebServerRequest* r){ 
-      g_interfaceType = WEB_INTERFACE_3D;
-      String completeHTML = buildCompleteHTML();
-      r->send(200, "text/html", completeHTML);
-    });
-    
-    server.on("/interface/simple", HTTP_GET, [](AsyncWebServerRequest* r){ 
-      g_interfaceType = WEB_INTERFACE_SIMPLE;
-      r->send(200, "text/html", DRONE_SIMPLE_HTML);
-    });
-    
-    // URL 파라미터로 인터페이스 선택
-    server.on("/", HTTP_GET, [](AsyncWebServerRequest* r){
-      if (r->hasParam("ui")) {
-        String uiType = r->getParam("ui")->value();
-        if (uiType == "3d") {
-          String completeHTML = buildCompleteHTML();
-          r->send(200, "text/html", completeHTML);
-          return;
-        } else if (uiType == "simple") {
-          r->send(200, "text/html", DRONE_SIMPLE_HTML);
-          return;
-        }
-      }
-      
-      // 기본값
-      if (g_interfaceType == WEB_INTERFACE_3D) {
-        String completeHTML = buildCompleteHTML();
-        r->send(200, "text/html", completeHTML);
-      } else {
-        r->send(200, "text/html", DRONE_SIMPLE_HTML);
-      }
-    });
-    
-    // 개별 파일 접근 엔드포인트 (디버깅용)
-    #ifdef WEB_DEBUG_FS
-    server.on("/debug/css", HTTP_GET, [](AsyncWebServerRequest* r){
-      r->send(200, "text/css", DRONE_CSS);
-    });
-    
-    server.on("/debug/js", HTTP_GET, [](AsyncWebServerRequest* r){
-      r->send(200, "application/javascript", DRONE_JS);
-    });
-    
-    server.on("/debug/html", HTTP_GET, [](AsyncWebServerRequest* r){
-      r->send(200, "text/html", DRONE_HTML);
-    });
-    #endif
     
     // API endpoints
     server.on("/telemetry", HTTP_GET, handleTelemetry);
@@ -170,8 +100,6 @@ namespace web {
     Serial.println("Web server started on port 80");
     Serial.print("AP IP: ");
     Serial.println(WiFi.softAPIP());
-    Serial.printf("Interface type: %s\n", 
-                  g_interfaceType == WEB_INTERFACE_3D ? "3D" : "Simple");
   }
 
   void loop() {
@@ -230,7 +158,7 @@ namespace web {
 
 } // namespace web
 
-// HTTP handlers (기존과 동일)
+// HTTP handlers
 static void handleTelemetry(AsyncWebServerRequest* req) {
   JsonDocument doc;
   doc["attitude"]["roll"] = sensorData.roll;

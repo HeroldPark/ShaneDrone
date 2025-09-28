@@ -11,68 +11,33 @@ const char DRONE_3D_HTML[] PROGMEM = R"HTML(
 *{margin:0;padding:0;box-sizing:border-box}
 body{font:14px/1.5 system-ui,-apple-system,sans-serif;background:#0a0a0a;color:#fff;overflow:hidden}
 #canvas3d{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1}
-.overlay{position:fixed;z-index:10;background:rgba(0,0,0,0.85);border-radius:8px;padding:10px;backdrop-filter:blur(10px)}
-.top-left{top:10px;left:10px;min-width:180px}
-.top-right{top:10px;right:10px;min-width:180px}
-.left-below{top:120px;left:10px;min-width:180px}
-.right-below{top:120px;right:10px;min-width:180px}
-.bottom-center{bottom:230px;left:50%;transform:translateX(-50%);min-width:200px}
-h3{color:#4fc3f7;margin:0 0 8px;font-size:14px}
-.kv{display:flex;justify-content:space-between;padding:3px 0;font-size:12px}
+.overlay{position:fixed;z-index:10;background:rgba(0,0,0,0.85);border-radius:12px;padding:15px;backdrop-filter:blur(10px)}
+.top-left{top:20px;left:20px;min-width:200px}
+.top-right{top:20px;right:20px;min-width:200px}
+.bottom-left{bottom:20px;left:20px}
+.top-center{top:20px;left:50%;transform:translateX(-50%);min-width:200px}
+.bottom-right{bottom:20px;right:20px;min-width:250px}
+h3{color:#4fc3f7;margin:0 0 10px;font-size:16px}
+.kv{display:flex;justify-content:space-between;padding:4px 0;font-size:13px}
 .kv span:first-child{color:rgba(255,255,255,0.7)}
 .kv b{color:#4fc3f7}
-.motor-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:6px}
-.motor-item{background:rgba(255,255,255,0.05);padding:6px;border-radius:6px;text-align:center;font-size:11px}
-.motor-bar{height:4px;background:#333;border-radius:2px;overflow:hidden;margin:3px 0}
+.motor-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.motor-item{background:rgba(255,255,255,0.05);padding:8px;border-radius:6px;text-align:center}
+.motor-bar{height:6px;background:#333;border-radius:3px;overflow:hidden;margin:4px 0}
 .motor-fill{height:100%;background:linear-gradient(90deg,#4fc3f7,#29b6f6);transition:width 0.2s}
-.btns{display:flex;flex-wrap:nowrap;gap:6px;margin-top:8px;justify-content:center}
-button{padding:6px 10px;border:0;border-radius:6px;background:#4fc3f7;color:#000;font-weight:600;cursor:pointer;font-size:12px}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+button{padding:8px 12px;border:0;border-radius:6px;background:#4fc3f7;color:#000;font-weight:600;cursor:pointer}
 button:hover{background:#29b6f6}
 .danger{background:#f44336}
 .danger:hover{background:#e53935}
 .success{background:#4caf50}
-.ws{display:inline-block;width:8px;height:8px;border-radius:50%;background:#f44336;margin-right:6px}
+.ws{display:inline-block;width:8px;height:8px;border-radius:50%;background:#f44336;margin-right:8px}
 .ws.ok{background:#4caf50}
-.sticks{position:fixed;bottom:10px;left:0;right:0;display:flex;justify-content:space-between;padding:0 20px;z-index:20}
-.stick{width:calc(50vw - 30px);height:200px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);border-radius:12px;position:relative;touch-action:none}
-.knob{width:60px;height:60px;background:radial-gradient(circle,#4fc3f7,#1976d2);border-radius:50%;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);box-shadow:0 4px 12px rgba(0,0,0,0.5)}
-.rcpill{display:inline-block;padding:3px 8px;border-radius:10px;background:rgba(255,255,255,0.1);margin-left:8px;cursor:pointer;font-size:10px}
+.sticks{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);display:flex;gap:20px;z-index:20}
+.stick{width:120px;height:120px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);border-radius:12px;position:relative;touch-action:none}
+.knob{width:36px;height:36px;background:radial-gradient(circle,#4fc3f7,#1976d2);border-radius:50%;position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);box-shadow:0 4px 12px rgba(0,0,0,0.5)}
+.rcpill{display:inline-block;padding:4px 10px;border-radius:12px;background:rgba(255,255,255,0.1);margin-left:10px;cursor:pointer;font-size:12px}
 .rcpill.on{background:#4caf50;color:#000}
-
-/* 모바일 최적화 */
-@media (max-width: 768px) {
-  .overlay{padding:8px;border-radius:6px}
-  .top-left{top:5px;left:5px;min-width:150px}
-  .top-right{top:5px;right:5px;min-width:150px}
-  .left-below{top:100px;left:5px;min-width:150px}
-  .right-below{top:100px;right:5px;min-width:150px}
-  .bottom-center{bottom:200px;left:50%;transform:translateX(-50%);min-width:150px}
-  h3{font-size:13px;margin:0 0 6px}
-  .kv{font-size:11px;padding:2px 0}
-  .motor-item{padding:4px;font-size:10px}
-  .motor-bar{height:3px}
-  button{padding:5px 8px;font-size:11px}
-  .sticks{bottom:5px;padding:0 10px}
-  .stick{width:calc(50vw - 20px);height:180px}
-  .knob{width:50px;height:50px}
-  .rcpill{font-size:9px;padding:2px 6px}
-}
-
-@media (max-width: 480px) {
-  .overlay{padding:6px}
-  .top-left{min-width:120px}
-  .top-right{min-width:120px}
-  .left-below{min-width:120px}
-  .right-below{min-width:120px}
-  .bottom-center{bottom:180px;min-width:120px}
-  h3{font-size:12px}
-  .kv{font-size:10px}
-  .motor-item{font-size:9px}
-  button{padding:4px 6px;font-size:10px}
-  .sticks{padding:0 5px}
-  .stick{width:calc(50vw - 15px);height:160px}
-  .knob{width:40px;height:40px}
-}
 </style>
 </head><body>
 
@@ -92,7 +57,7 @@ button:hover{background:#29b6f6}
   <div class="kv"><span>Yaw:</span><b id="yaw">0.0°</b></div>
 </div>
 
-<div class="overlay left-below">
+<div class="overlay top-center">
   <h3>조이스틱 입력</h3>
   <div class="kv"><span>RC Roll:</span><b id="rcRoll">0.00</b></div>
   <div class="kv"><span>RC Pitch:</span><b id="rcPitch">0.00</b></div>
@@ -100,7 +65,7 @@ button:hover{background:#29b6f6}
   <div class="kv"><span>RC Throttle:</span><b id="rcThr">0%</b></div>
 </div>
 
-<div class="overlay right-below">
+<div class="overlay bottom-left">
   <h3>모터 출력</h3>
   <div class="motor-grid">
     <div class="motor-item">
@@ -126,7 +91,7 @@ button:hover{background:#29b6f6}
   </div>
 </div>
 
-<div class="overlay bottom-center">
+<div class="overlay bottom-right">
   <h3>제어</h3>
   <div class="btns">
     <button onclick="cmd('CALIBRATE')">캘리브레이션</button>
@@ -196,23 +161,23 @@ function init3D(){
 function createDrone(){
   drone=new THREE.Group();
   
-  // Body (2배 크기)
-  const bodyGeo=new THREE.BoxGeometry(0.6,0.1,0.6);
+  // Body
+  const bodyGeo=new THREE.BoxGeometry(0.3,0.05,0.3);
   const bodyMat=new THREE.MeshLambertMaterial({color:0x333333});
   const body=new THREE.Mesh(bodyGeo,bodyMat);
   drone.add(body);
   
-  // Arms & Motors (2배 크기)
-  const armGeo=new THREE.CylinderGeometry(0.02,0.02,0.8);
+  // Arms & Motors
+  const armGeo=new THREE.CylinderGeometry(0.01,0.01,0.4);
   const armMat=new THREE.MeshLambertMaterial({color:0x666666});
-  const motorGeo=new THREE.CylinderGeometry(0.06,0.06,0.04);
+  const motorGeo=new THREE.CylinderGeometry(0.03,0.03,0.02);
   const motorMat=new THREE.MeshLambertMaterial({color:0x444444});
   
   const positions=[
-    {x:0.4,z:0.4,rot:Math.PI/4},   // FL
-    {x:-0.4,z:0.4,rot:-Math.PI/4}, // FR
-    {x:0.4,z:-0.4,rot:-Math.PI/4}, // RL
-    {x:-0.4,z:-0.4,rot:Math.PI/4}  // RR
+    {x:0.2,z:0.2,rot:Math.PI/4},   // FL
+    {x:-0.2,z:0.2,rot:-Math.PI/4}, // FR
+    {x:0.2,z:-0.2,rot:-Math.PI/4}, // RL
+    {x:-0.2,z:-0.2,rot:Math.PI/4}  // RR
   ];
   
   positions.forEach((pos,i)=>{
@@ -224,12 +189,12 @@ function createDrone(){
     
     // Motor
     const motor=new THREE.Mesh(motorGeo,motorMat);
-    motor.position.set(pos.x,0.07,pos.z);
+    motor.position.set(pos.x,0.035,pos.z);
     drone.add(motor);
     
-    // Propeller (2배 크기)
+    // Propeller
     const propGroup=new THREE.Group();
-    const propGeo=new THREE.BoxGeometry(0.3,0.004,0.02);
+    const propGeo=new THREE.BoxGeometry(0.15,0.002,0.01);
     const propMat=new THREE.MeshLambertMaterial({
       color:i%2===0?0xff4444:0x44ff44,
       transparent:true,
@@ -240,7 +205,7 @@ function createDrone(){
     prop2.rotation.y=Math.PI/2;
     propGroup.add(prop1);
     propGroup.add(prop2);
-    propGroup.position.set(pos.x,0.1,pos.z);
+    propGroup.position.set(pos.x,0.05,pos.z);
     propGroup.userData={speed:0,dir:i%2===0?1:-1};
     drone.add(propGroup);
     propellers.push(propGroup);
@@ -351,7 +316,7 @@ function toggleRc(){
 
 // Dual stick controls
 function makeStick(el,knob){
-  let active=false,cx,cy,kx=0,ky=0,maxR=80; // 큰 조이스틱용 반지름 확대
+  let active=false,cx,cy,kx=0,ky=0,maxR=50;
   
   function start(e){
     e.preventDefault();

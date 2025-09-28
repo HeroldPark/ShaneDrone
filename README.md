@@ -129,3 +129,12 @@ A fatal error occurred: Could not open COM6, the port is busy or doesn't exist.
 	- Serial Port 연결 오류 => upload_port=COM*, monitor_port=COM* 으로 auto detect로 설정
 	- RC 토글 : RC ON 안되는 상태
 ![현재 상태 화면](./docs/images/화면_캡처_2025-09-23.jpg)
+
+### 12. 2025-09-28
+	- LittleFS은 성능 문제로 동작하지 않는다.
+	- header 파일에 javascript, html, css 통합 시용으로 함.
+	- drone_3d_html.h 사용 + web_async_3d.cpp
+	- drone_3d_html.h 분리 : drone_css.h, drone_html.h, drone_js.h + web_async.cpp
+	- 모바일에서 가상 드론이비지가 나타나지 않는다.
+	- RC 토글 버튼이 동작하지 않는다.
+	- 가상 조이스틱 입력이 출력되지 않는다.
