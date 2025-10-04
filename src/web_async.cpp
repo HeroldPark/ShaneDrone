@@ -112,10 +112,10 @@ static void handleCommand(AsyncWebServerRequest* req, uint8_t* data, size_t len,
     JsonObject r = doc["rc"].as<JsonObject>();
     g_lastRcMs = millis();
     if (g_webRcEnabled) {
-      controllerInput.rollNorm     = constrain((float)(r["roll"]     | 0), -1.f,  1.f);
-      controllerInput.pitchNorm    = constrain((float)(r["pitch"]    | 0), -1.f,  1.f);
-      controllerInput.yawNorm      = constrain((float)(r["yaw"]      | 0), -1.f,  1.f);
-      controllerInput.throttleNorm = constrain((float)(r["throttle"] | 0),  0.f,  1.f);
+        controllerInput.rollNorm     = constrain(r["roll"].as<float>(), -1.f,  1.f);
+        controllerInput.pitchNorm    = constrain(r["pitch"].as<float>(), -1.f,  1.f);
+        controllerInput.yawNorm      = constrain(r["yaw"].as<float>(), -1.f,  1.f);
+        controllerInput.throttleNorm = constrain(r["throttle"].as<float>(),  0.f,  1.f);
     }
     req->send(200, "text/plain", "rc ok");
     return;
@@ -144,10 +144,16 @@ static void wsEvent(AsyncWebSocket*, AsyncWebSocketClient* client, AwsEventType 
             JsonObject r = doc["rc"].as<JsonObject>();
             g_lastRcMs = millis();
             if (g_webRcEnabled) {
-              controllerInput.rollNorm     = constrain((float)(r["roll"]     | 0), -1.f,  1.f);
-              controllerInput.pitchNorm    = constrain((float)(r["pitch"]    | 0), -1.f,  1.f);
-              controllerInput.yawNorm      = constrain((float)(r["yaw"]      | 0), -1.f,  1.f);
-              controllerInput.throttleNorm = constrain((float)(r["throttle"] | 0),  0.f,  1.f);
+              // 수정: | 0 대신 .as<float>() 사용
+              controllerInput.rollNorm     = constrain(r["roll"].as<float>(), -1.f,  1.f);
+              controllerInput.pitchNorm    = constrain(r["pitch"].as<float>(), -1.f,  1.f);
+              controllerInput.yawNorm      = constrain(r["yaw"].as<float>(), -1.f,  1.f);
+              controllerInput.throttleNorm = constrain(r["throttle"].as<float>(),  0.f,  1.f);
+
+              // 디버그 출력 추가 (여기에 넣어야 함)
+              Serial.printf("[WEB] RC: T=%.2f R=%.2f P=%.2f Y=%.2f\n",
+                controllerInput.throttleNorm, controllerInput.rollNorm,
+                controllerInput.pitchNorm, controllerInput.yawNorm);
             }
           }
           const char* cmd = doc["command"] | "";
@@ -167,87 +173,91 @@ static void wsEvent(AsyncWebSocket*, AsyncWebSocketClient* client, AwsEventType 
 // ===== Public API =====
 namespace web {
 
-void begin() {
-  Serial.println("Initializing web server...");
-  DefaultHeaders::Instance().addHeader("Cache-Control", "no-cache");
+    void begin() {
+        Serial.println("Initializing web server...");
+        DefaultHeaders::Instance().addHeader("Cache-Control", "no-cache");
 
-  const bool fsOK = mountFS();
-  if (fsOK) {
-    // 정적 파일: data/ 루트 → "/"
-    server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
-    listFS(); // WEB_LOG_FS 정의 시 파일 목록 출력
-  } else {
-    // 폴백(200 OK): 최소 페이지 제공하여 500 회피
-    server.on("/", HTTP_GET, [](AsyncWebServerRequest* r){
-      r->send(200, "text/html",
-        "<!doctype html><meta charset=utf-8>"
-        "<h3>Embedded UI</h3><p>LittleFS mount failed; serving fallback UI.</p>");
-    });
-  }
+        const bool fsOK = mountFS();
+        if (fsOK) {
+            // 정적 파일: data/ 루트 → "/"
+            server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
+            listFS(); // WEB_LOG_FS 정의 시 파일 목록 출력
+        } else {
+            // 폴백(200 OK): 최소 페이지 제공하여 500 회피
+            server.on("/", HTTP_GET, [](AsyncWebServerRequest* r){
+            r->send(200, "text/html",
+                "<!doctype html><meta charset=utf-8>"
+                "<h3>Embedded UI</h3><p>LittleFS mount failed; serving fallback UI.</p>");
+            });
+        }
 
-  // Captive portal 호환
-  server.on("/generate_204", HTTP_ANY, [](AsyncWebServerRequest* r){ r->send(204); });
-  server.on("/gen_204",      HTTP_ANY, [](AsyncWebServerRequest* r){ r->send(204); });
+        // Captive portal 호환
+        server.on("/generate_204", HTTP_ANY, [](AsyncWebServerRequest* r){ r->send(204); });
+        server.on("/gen_204",      HTTP_ANY, [](AsyncWebServerRequest* r){ r->send(204); });
 
-  // REST
-  server.on("/telemetry", HTTP_GET, handleTelemetry);
-  server.on("/command",   HTTP_POST, [](AsyncWebServerRequest*){}, nullptr, handleCommand);
+        // REST
+        server.on("/telemetry", HTTP_GET, handleTelemetry);
+        server.on("/command",   HTTP_POST, [](AsyncWebServerRequest*){}, nullptr, handleCommand);
 
-  // WebSocket
-  ws.onEvent(wsEvent);
-  server.addHandler(&ws);
+        // WebSocket
+        ws.onEvent(wsEvent);
+        server.addHandler(&ws);
 
-  // DNS (AP 모드에서 캡티브 포털 유도)
-  dns.start(53, "*", WiFi.softAPIP());
+        // DNS (AP 모드에서 캡티브 포털 유도)
+        dns.start(53, "*", WiFi.softAPIP());
 
-  server.begin();
-  Serial.println("Web server started on port 80");
-  Serial.print("AP IP: "); Serial.println(WiFi.softAPIP());
-}
-
-void loop() {
-  dns.processNextRequest();
-
-  // RC timeout
-  if (g_webRcEnabled && (millis() - g_lastRcMs > RC_TIMEOUT_MS)) {
-    controllerInput.rollNorm = controllerInput.pitchNorm = controllerInput.yawNorm = 0.f;
-    controllerInput.throttleNorm = 0.f;
-  }
-
-  // 10Hz 텔레메트리 브로드캐스트
-  static unsigned long last = 0;
-  unsigned long now = millis();
-  if (now - last >= 100) {
-    last = now;
-    if (ws.count() > 0) {
-      JsonDocument doc;
-      doc["attitude"]["roll"]  = sensorData.roll;
-      doc["attitude"]["pitch"] = sensorData.pitch;
-      doc["attitude"]["yaw"]   = sensorData.yaw;
-      doc["gyro"]["x"] = sensorData.gyroX; doc["gyro"]["y"] = sensorData.gyroY; doc["gyro"]["z"] = sensorData.gyroZ;
-      doc["motors"]["fl"] = motorOutputs.motor_fl; doc["motors"]["fr"] = motorOutputs.motor_fr;
-      doc["motors"]["rl"] = motorOutputs.motor_rl; doc["motors"]["rr"] = motorOutputs.motor_rr;
-      doc["armed"] = systemArmed;
-      doc["battery"] = batteryVoltage;
-      doc["mode"] = flightModeName(getFlightMode());
-      doc["input"]["throttle"] = controllerInput.throttleNorm;
-      doc["input"]["roll"]     = controllerInput.rollNorm;
-      doc["input"]["pitch"]    = controllerInput.pitchNorm;
-      doc["input"]["yaw"]      = controllerInput.yawNorm;
-      doc["rcEnabled"] = g_webRcEnabled;
-
-      String out; serializeJson(doc, out);
-      ws.textAll(out);
+        server.begin();
+        Serial.println("Web server started on port 80");
+        Serial.print("AP IP: "); Serial.println(WiFi.softAPIP());
     }
-  }
-}
 
-void setRcEnabled(bool on) {
-  g_webRcEnabled = on;
-  if (!on) {
-    controllerInput.rollNorm = controllerInput.pitchNorm = controllerInput.yawNorm = 0.f;
-    controllerInput.throttleNorm = 0.f;
-  }
-}
+    void loop() {
+        dns.processNextRequest();
+
+        // RC timeout
+        if (g_webRcEnabled && (millis() - g_lastRcMs > RC_TIMEOUT_MS)) {
+            controllerInput.rollNorm = controllerInput.pitchNorm = controllerInput.yawNorm = 0.f;
+            controllerInput.throttleNorm = 0.f;
+        }
+
+        // 10Hz 텔레메트리 브로드캐스트
+        static unsigned long last = 0;
+        unsigned long now = millis();
+        if (now - last >= 100) {
+            last = now;
+            if (ws.count() > 0) {
+                JsonDocument doc;
+                doc["attitude"]["roll"]  = sensorData.roll;
+                doc["attitude"]["pitch"] = sensorData.pitch;
+                doc["attitude"]["yaw"]   = sensorData.yaw;
+                doc["gyro"]["x"] = sensorData.gyroX; doc["gyro"]["y"] = sensorData.gyroY; doc["gyro"]["z"] = sensorData.gyroZ;
+                doc["motors"]["fl"] = motorOutputs.motor_fl; doc["motors"]["fr"] = motorOutputs.motor_fr;
+                doc["motors"]["rl"] = motorOutputs.motor_rl; doc["motors"]["rr"] = motorOutputs.motor_rr;
+                doc["armed"] = systemArmed;
+                doc["battery"] = batteryVoltage;
+                doc["mode"] = flightModeName(getFlightMode());
+                doc["input"]["throttle"] = controllerInput.throttleNorm;
+                doc["input"]["roll"]     = controllerInput.rollNorm;
+                doc["input"]["pitch"]    = controllerInput.pitchNorm;
+                doc["input"]["yaw"]      = controllerInput.yawNorm;
+                doc["rcEnabled"] = g_webRcEnabled;
+
+                String out; serializeJson(doc, out);
+                ws.textAll(out);
+            }
+        }
+    }
+
+    void setRcEnabled(bool on) {
+        g_webRcEnabled = on;
+        if (!on) {
+            controllerInput.rollNorm = controllerInput.pitchNorm = controllerInput.yawNorm = 0.f;
+            controllerInput.throttleNorm = 0.f;
+        }
+    }
+
+    bool isRcEnabled() {
+        return g_webRcEnabled;
+    }
 
 } // namespace web

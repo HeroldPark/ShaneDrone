@@ -94,8 +94,8 @@ function createDrone(){
   
   // === 4개의 암 구조 (45도 대각선) ===
   const armConfigs = [
-    {x: -0.7, z: 0.7, name: 'FL', color: 0xff0000 },   // Front Left - 빨강
-    {x: 0.7, z: 0.7, name: 'FR', color: 0xff0000 },    // Front Right - 빨강
+    {x: -0.7, z: 0.7, name: 'FL', color: 0xff3333},   // Front Left - 밝은 빨강
+    {x: 0.7, z: 0.7, name: 'FR', color: 0xff3333},    // Front Right - 밝은 빨강
     {x: -0.7, z: -0.7, name: 'RL', color: 0x33ff33},  // Rear Left - 초록
     {x: 0.7, z: -0.7, name: 'RR', color: 0x33ff33}    // Rear Right - 초록
   ];
@@ -131,7 +131,7 @@ function createDrone(){
     const bladeMat = new THREE.MeshLambertMaterial({
       color: config.color,
       transparent: true,
-      opacity: 0.9
+      opacity: 0.7
     });
     
     const blade1 = new THREE.Mesh(blade1Geo, bladeMat);
@@ -161,17 +161,10 @@ function createDrone(){
   });
   
   // === 중앙 안테나/GPS ===
-//   const antennaGeo = new THREE.CylinderGeometry(0.015*scale, 0.015*scale, 0.2*scale);
-//   const antennaMat = new THREE.MeshLambertMaterial({color:0xFFFF66});
-//   const antenna = new THREE.Mesh(antennaGeo, antennaMat);
-//   antenna.position.set(0, 0.25*scale, 0);
-//   drone.add(antenna);
-
-// === 전면 안테나/GPS (전면 LED 위치에서 위로) ===
   const antennaGeo = new THREE.CylinderGeometry(0.015*scale, 0.015*scale, 0.2*scale);
   const antennaMat = new THREE.MeshLambertMaterial({color:0xFFFF66});
   const antenna = new THREE.Mesh(antennaGeo, antennaMat);
-  antenna.position.set(0, 0.15*scale, 0.8*scale);
+  antenna.position.set(0, 0.25*scale, 0);
   drone.add(antenna);
   
   // === Top 안테나/GPS ===

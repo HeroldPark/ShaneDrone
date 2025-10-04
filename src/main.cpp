@@ -11,6 +11,7 @@
 #include "../include/control.h"
 #include "../include/sensors.h"
 #include "../include/communication.h"
+#include "../include/web.h"
 #include <cmath>
 
 #define LED_BUILTIN 13      // 내장 LED (안전)
@@ -142,8 +143,11 @@ void loop()
 
   // 2. 통신 데이터 처리 (500Hz)
   if (currentTime - lastControlUpdate >= CONTROL_UPDATE_INTERVAL) {
-    // 리시버 데이터 읽기
-    readReceiverData(&controllerInput);
+    // Web RC가 비활성화일 때만 SBUS 읽기
+    if (!web::isRcEnabled()) {
+        // 리시버 데이터 읽기
+        readReceiverData(&controllerInput);
+    }
 
     // ARM/DISARM 체크
     checkArmStatus(&controllerInput);
