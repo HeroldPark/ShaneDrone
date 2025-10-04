@@ -1,203 +1,79 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Shane Drone Control</title>
-    <link rel="stylesheet" href="/style.css">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Shane Drone 3D Control</title>
+  <link rel="stylesheet" href="/drone.css">
 </head>
 <body>
-    <div class="container">
-        <!-- Header -->
-        <header class="header">
-            <h1>
-                <span id="ws-status" class="status-indicator"></span>
-                Shane Drone Control
-                <span id="rc-pill" class="rc-pill">RC OFF</span>
-            </h1>
-            <div class="subtitle">실시간 모니터링 & 제어 시스템</div>
-        </header>
 
-        <!-- Main Dashboard -->
-        <div class="dashboard">
-            <!-- Telemetry Section -->
-            <div class="card">
-                <h2>📊 텔레메트리</h2>
-                <div class="telemetry-grid">
-                    <div class="metric">
-                        <span class="label">Roll</span>
-                        <span class="value" id="roll">0.0°</span>
-                    </div>
-                    <div class="metric">
-                        <span class="label">Pitch</span>
-                        <span class="value" id="pitch">0.0°</span>
-                    </div>
-                    <div class="metric">
-                        <span class="label">Yaw</span>
-                        <span class="value" id="yaw">0.0°</span>
-                    </div>
-                    <div class="metric">
-                        <span class="label">고도</span>
-                        <span class="value" id="altitude">0.0m</span>
-                    </div>
-                </div>
-                
-                <div class="status-grid">
-                    <div class="status-item">
-                        <span class="label">배터리</span>
-                        <div class="battery-bar">
-                            <div id="battery-level" class="battery-level"></div>
-                        </div>
-                        <span class="value" id="battery">0.00V</span>
-                    </div>
-                    <div class="status-item">
-                        <span class="label">비행 모드</span>
-                        <span class="value mode-badge" id="mode">STABILIZE</span>
-                    </div>
-                    <div class="status-item">
-                        <span class="label">ARM 상태</span>
-                        <span class="value arm-status" id="arm">DISARMED</span>
-                    </div>
-                </div>
-            </div>
+  <div id="canvas3d"></div>
 
-            <!-- RC Input Section -->
-            <div class="card">
-                <h2>🎮 조종 입력</h2>
-                <div class="rc-inputs">
-                    <div class="rc-item">
-                        <span class="label">Throttle</span>
-                        <div class="progress-bar">
-                            <div id="rc-throttle-bar" class="progress-fill"></div>
-                        </div>
-                        <span class="value" id="rc-throttle">0%</span>
-                    </div>
-                    <div class="rc-item">
-                        <span class="label">Roll</span>
-                        <div class="progress-bar centered">
-                            <div id="rc-roll-bar" class="progress-fill-centered"></div>
-                        </div>
-                        <span class="value" id="rc-roll">0.00</span>
-                    </div>
-                    <div class="rc-item">
-                        <span class="label">Pitch</span>
-                        <div class="progress-bar centered">
-                            <div id="rc-pitch-bar" class="progress-fill-centered"></div>
-                        </div>
-                        <span class="value" id="rc-pitch">0.00</span>
-                    </div>
-                    <div class="rc-item">
-                        <span class="label">Yaw</span>
-                        <div class="progress-bar centered">
-                            <div id="rc-yaw-bar" class="progress-fill-centered"></div>
-                        </div>
-                        <span class="value" id="rc-yaw">0.00</span>
-                    </div>
-                </div>
-            </div>
+  <div class="overlay top-left">
+    <h3><span class="ws" id="ws"></span>연결 상태<span class="rcpill" id="rcpill">(RC OFF)</span></h3>
+    <div class="kv"><span>ARM:</span><b id="arm">DISARMED</b></div>
+    <div class="kv"><span>모드:</span><b id="mode">STABILIZE</b></div>
+    <div class="kv"><span>배터리:</span><b id="battery">0.00V</b></div>
+  </div>
 
-            <!-- Motor Output Section -->
-            <div class="card">
-                <h2>⚙️ 모터 출력</h2>
-                <div class="motors-grid">
-                    <div class="motor-item">
-                        <div class="motor-label">FL (앞-왼)</div>
-                        <div class="motor-bar">
-                            <div id="motor-fl" class="motor-fill"></div>
-                        </div>
-                        <span class="motor-value" id="motor-fl-value">1000</span>
-                    </div>
-                    <div class="motor-item">
-                        <div class="motor-label">FR (앞-오)</div>
-                        <div class="motor-bar">
-                            <div id="motor-fr" class="motor-fill"></div>
-                        </div>
-                        <span class="motor-value" id="motor-fr-value">1000</span>
-                    </div>
-                    <div class="motor-item">
-                        <div class="motor-label">RL (뒤-왼)</div>
-                        <div class="motor-bar">
-                            <div id="motor-rl" class="motor-fill"></div>
-                        </div>
-                        <span class="motor-value" id="motor-rl-value">1000</span>
-                    </div>
-                    <div class="motor-item">
-                        <div class="motor-label">RR (뒤-오)</div>
-                        <div class="motor-bar">
-                            <div id="motor-rr" class="motor-fill"></div>
-                        </div>
-                        <span class="motor-value" id="motor-rr-value">1000</span>
-                    </div>
-                </div>
-            </div>
+  <div class="overlay top-right">
+    <h3>자세 정보</h3>
+    <div class="kv"><span>Roll:</span><b id="roll">0.0°</b></div>
+    <div class="kv"><span>Pitch:</span><b id="pitch">0.0°</b></div>
+    <div class="kv"><span>Yaw:</span><b id="yaw">0.0°</b></div>
+  </div>
 
-            <!-- Control Section -->
-            <div class="card">
-                <h2>🎛️ 제어 명령</h2>
-                <div class="control-buttons">
-                    <button class="btn btn-primary" onclick="sendCommand('CALIBRATE')">
-                        센서 캘리브레이션
-                    </button>
-                    <button class="btn btn-success" onclick="sendCommand('RESET_PID')">
-                        PID 리셋
-                    </button>
-                    <button class="btn btn-danger" onclick="sendCommand('EMERGENCY_STOP')">
-                        비상 정지
-                    </button>
-                    <button class="btn btn-warning" id="toggle-rc-btn" onclick="toggleRC()">
-                        RC 토글
-                    </button>
-                </div>
-            </div>
+  <div class="overlay left-below">
+    <h3>조이스틱 입력</h3>
+    <div class="kv"><span>RC Roll:</span><b id="rcRoll">0.00</b></div>
+    <div class="kv"><span>RC Pitch:</span><b id="rcPitch">0.00</b></div>
+    <div class="kv"><span>RC Yaw:</span><b id="rcYaw">0.00</b></div>
+    <div class="kv"><span>RC Throttle:</span><b id="rcThr">0%</b></div>
+  </div>
 
-            <!-- Gyro Data Section -->
-            <div class="card">
-                <h2>🌀 자이로 데이터</h2>
-                <div class="gyro-grid">
-                    <div class="gyro-item">
-                        <span class="label">Gyro X</span>
-                        <span class="value" id="gyro-x">0.0°/s</span>
-                    </div>
-                    <div class="gyro-item">
-                        <span class="label">Gyro Y</span>
-                        <span class="value" id="gyro-y">0.0°/s</span>
-                    </div>
-                    <div class="gyro-item">
-                        <span class="label">Gyro Z</span>
-                        <span class="value" id="gyro-z">0.0°/s</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Dual Stick Controls -->
-        <div class="stick-controls">
-            <div class="stick-container" id="left-stick">
-                <div class="stick-label">Throttle / Yaw</div>
-                <div class="stick-base">
-                    <div class="stick-knob" id="left-knob"></div>
-                    <div class="stick-center"></div>
-                </div>
-                <div class="stick-values">
-                    <span>T: <span id="left-throttle">0%</span></span>
-                    <span>Y: <span id="left-yaw">0.00</span></span>
-                </div>
-            </div>
-
-            <div class="stick-container" id="right-stick">
-                <div class="stick-label">Roll / Pitch</div>
-                <div class="stick-base">
-                    <div class="stick-knob" id="right-knob"></div>
-                    <div class="stick-center"></div>
-                </div>
-                <div class="stick-values">
-                    <span>R: <span id="right-roll">0.00</span></span>
-                    <span>P: <span id="right-pitch">0.00</span></span>
-                </div>
-            </div>
-        </div>
+  <div class="overlay right-below">
+    <h3>모터 출력</h3>
+    <div class="motor-grid">
+      <div class="motor-item">
+        <div>FL</div>
+        <div class="motor-bar"><div class="motor-fill" id="mfl"></div></div>
+        <div id="mflv">1000</div>
+      </div>
+      <div class="motor-item">
+        <div>FR</div>
+        <div class="motor-bar"><div class="motor-fill" id="mfr"></div></div>
+        <div id="mfrv">1000</div>
+      </div>
+      <div class="motor-item">
+        <div>RL</div>
+        <div class="motor-bar"><div class="motor-fill" id="mrl"></div></div>
+        <div id="mrlv">1000</div>
+      </div>
+      <div class="motor-item">
+        <div>RR</div>
+        <div class="motor-bar"><div class="motor-fill" id="mrr"></div></div>
+        <div id="mrrv">1000</div>
+      </div>
     </div>
+  </div>
 
-    <script src="/script.js"></script>
+  <div class="overlay bottom-center">
+    <h3>제어</h3>
+    <div class="btns">
+      <button onclick="cmd('CALIBRATE')">캘리브레이션</button>
+      <button onclick="cmd('RESET_PID')">PID 리셋</button>
+      <button class="danger" onclick="cmd('EMERGENCY_STOP')">비상정지</button>
+      <button onclick="toggleRc()">RC 토글</button>
+    </div>
+  </div>
+
+  <div class="sticks">
+    <div class="stick" id="stickL"><div class="knob" id="knobL"></div></div>
+    <div class="stick" id="stickR"><div class="knob" id="knobR"></div></div>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="/drone.js"></script>
 </body>
 </html>

@@ -138,3 +138,7 @@ A fatal error occurred: Could not open COM6, the port is busy or doesn't exist.
 	- 모바일에서 가상 드론이비지가 나타나지 않는다.
 	- RC 토글 버튼이 동작하지 않는다.
 	- 가상 조이스틱 입력이 출력되지 않는다.
+
+### 13. 2025-10-04
+	- LittleFS로 파일 시스템 구축
+	- /data/drone.css, /data/drone.js, /data/index.html
