@@ -140,5 +140,6 @@ A fatal error occurred: Could not open COM6, the port is busy or doesn't exist.
 	- 가상 조이스틱 입력이 출력되지 않는다.
 
 ### 13. 2025-10-04
-	- LittleFS로 파일 시스템 구축
+	- LittleFS로 파일 시스템 구축 : 업데이트 이미지
 	- /data/drone.css, /data/drone.js, /data/index.html
+![현재 상태 화면](./docs/images/화면_캡처_2025-10-04_140257.jpg)
