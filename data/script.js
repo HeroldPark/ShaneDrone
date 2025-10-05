@@ -47,6 +47,14 @@ function updateDashboard(data) {
         updateElement('roll', `${data.attitude.roll.toFixed(1)}°`);
         updateElement('pitch', `${data.attitude.pitch.toFixed(1)}°`);
         updateElement('yaw', `${data.attitude.yaw.toFixed(1)}°`);
+        
+        // Update visual display
+        updateElement('visual-roll', `${data.attitude.roll.toFixed(1)}°`);
+        updateElement('visual-pitch', `${data.attitude.pitch.toFixed(1)}°`);
+        updateElement('visual-yaw', `${data.attitude.yaw.toFixed(1)}°`);
+        
+        // Update drone visualization
+        updateDroneVisualization(data.attitude.roll, data.attitude.pitch, data.attitude.yaw);
     }
     
     // Gyro
@@ -54,6 +62,13 @@ function updateDashboard(data) {
         updateElement('gyro-x', `${data.gyro.x.toFixed(1)}°/s`);
         updateElement('gyro-y', `${data.gyro.y.toFixed(1)}°/s`);
         updateElement('gyro-z', `${data.gyro.z.toFixed(1)}°/s`);
+    }
+    
+    // Altitude (기본값 0.0 - 백엔드에서 전송하지 않음)
+    if (data.altitude !== undefined) {
+        updateElement('altitude', `${data.altitude.toFixed(1)}m`);
+    } else {
+        updateElement('altitude', '0.0m');
     }
     
     // Battery
@@ -73,17 +88,23 @@ function updateDashboard(data) {
         const armElement = document.getElementById('arm');
         armElement.textContent = data.armed ? 'ARMED' : 'DISARMED';
         armElement.className = data.armed ? 'value arm-status armed' : 'value arm-status disarmed';
+        
+        // Update propeller animation based on armed status
+        updatePropellerAnimation(data.armed);
     }
     
-    // Motors
+    // Motors - 백엔드와 일치하는 필드명 사용
     if (data.motors) {
         updateMotor('fl', data.motors.fl);
         updateMotor('fr', data.motors.fr);
         updateMotor('rl', data.motors.rl);
         updateMotor('rr', data.motors.rr);
+        
+        // Update thrust arrow based on average motor output
+        updateThrustArrow(data.motors);
     }
     
-    // RC Input
+    // RC Input - 백엔드에서 input 객체로 전송
     if (data.input) {
         updateRCDisplay(data.input);
     }
@@ -92,6 +113,66 @@ function updateDashboard(data) {
     if (data.rcEnabled !== undefined) {
         rcEnabled = data.rcEnabled;
         updateRCPill();
+        
+        if(rcEnabled) {
+            data.armed = true;  // for test
+            updatePropellerAnimation(data.armed);
+        }
+    }
+}
+
+// Update drone visualization based on attitude
+function updateDroneVisualization(roll, pitch, yaw) {
+    const droneBody = document.getElementById('drone-body');
+    if (droneBody) {
+        // Apply 3D-like rotation effect
+        // Roll: rotate around center
+        // Pitch: scale and skew to simulate perspective
+        // Yaw: rotate the entire body
+        
+        const rollRotation = roll;
+        const pitchScale = 1 - Math.abs(pitch) / 180 * 0.3; // Scale down when pitched
+        const yawRotation = yaw;
+        
+        droneBody.style.transformOrigin = 'center';
+        droneBody.style.transform = `
+            rotate(${rollRotation}deg) 
+            scale(${pitchScale}, 1)
+        `;
+    }
+}
+
+// Update propeller animation
+function updatePropellerAnimation(armed) {
+    const propellers = document.querySelectorAll('.propeller');
+    propellers.forEach(prop => {
+        if (armed) {
+            prop.style.animationPlayState = 'running';
+        } else {
+            prop.style.animationPlayState = 'paused';
+        }
+    });
+}
+
+// Update thrust arrow based on motor outputs
+function updateThrustArrow(motors) {
+    const avgMotor = (motors.fl + motors.fr + motors.rl + motors.rr) / 4;
+    const thrustArrow = document.getElementById('thrust-arrow');
+    
+    if (thrustArrow) {
+        // Calculate thrust intensity (1000 = no thrust, 2000 = max thrust)
+        const thrustIntensity = Math.max(0, (avgMotor - 1000) / 1000);
+        
+        // Adjust arrow opacity and length based on thrust
+        const line = thrustArrow.querySelector('line');
+        if (line) {
+            const baseY = 200;
+            const maxLength = 80;
+            const length = maxLength * thrustIntensity;
+            line.setAttribute('y2', baseY - length);
+        }
+        
+        thrustArrow.style.opacity = 0.3 + (thrustIntensity * 0.7);
     }
 }
 
@@ -204,7 +285,7 @@ function toggleRC() {
 }
 
 // Update RC pill display
-function updateRCPillRCPill() {
+function updateRCPill() {
     const pill = document.getElementById('rc-pill');
     if (pill) {
         pill.textContent = rcEnabled ? 'RC ON' : 'RC OFF';
@@ -224,9 +305,26 @@ class VirtualStick {
         this.centerY = 0;
         this.knobX = 0;
         this.knobY = 0;
-        this.maxRadius = 70;
+
+        this.touchId = null; // 멀티터치 식별자
+
+        // 모바일 감지 및 maxRadius 설정
+        this.updateMaxRadius();
         
         this.init();
+    }
+
+    updateMaxRadius() {
+        this.isMobile = window.innerWidth <= 768;
+        const isLandscape = window.innerWidth > window.innerHeight;
+        
+        if (this.isMobile && isLandscape) {
+            this.maxRadius = 35; // 가로 모드: 70px의 절반
+        } else if (this.isMobile) {
+            this.maxRadius = 70; // 세로 모드: 140px의 절반
+        } else {
+            this.maxRadius = 140; // PC
+        }
     }
     
     init() {
@@ -244,7 +342,10 @@ class VirtualStick {
         
         // Calculate center
         this.updateCenter();
-        window.addEventListener('resize', this.updateCenter.bind(this));
+        window.addEventListener('resize', () => {
+            this.updateMaxRadius();
+            this.updateCenter();
+        });
     }
     
     updateCenter() {
@@ -255,6 +356,13 @@ class VirtualStick {
     
     onStart(e) {
         e.preventDefault();
+
+        // 이 컨테이너에서 "새로" 발생한 터치만 캡처
+        if (e.changedTouches && e.changedTouches.length > 0) {
+            if (this.touchId !== null) return;
+            this.touchId = e.changedTouches[0].identifier;
+        }
+
         this.active = true;
         this.onMove(e);
     }
@@ -267,8 +375,18 @@ class VirtualStick {
         
         let clientX, clientY;
         if (e.touches) {
-            clientX = e.touches[0].clientX;
-            clientY = e.touches[0].clientY;
+            // 멀티터치: 자신의 touchId와 일치하는 터치만 처리
+            let touch = null;
+            for (let i = 0; i < e.touches.length; i++) {
+                if (e.touches[i].identifier === this.touchId) {
+                    touch = e.touches[i];
+                    break;
+                }
+            }
+            if (!touch) return; // 자신의 터치가 아니면 무시
+            
+            clientX = touch.clientX;
+            clientY = touch.clientY;
         } else {
             clientX = e.clientX;
             clientY = e.clientY;
@@ -300,7 +418,21 @@ class VirtualStick {
     }
     
     onEnd() {
+        // 터치 이벤트인 경우, 자신의 터치가 끝났는지 확인
+        if (e.changedTouches) {
+            let isMine = false;
+            for (let i = 0; i < e.changedTouches.length; i++) {
+                if (e.changedTouches[i].identifier === this.touchId) {
+                    isMine = true;
+                    break;
+                }
+            }
+            if (!isMine) return; // 다른 터치가 끝난 것이면 무시
+            e.preventDefault();
+        }
+        
         this.active = false;
+        this.touchId = null; // 터치 ID 초기화
         this.knobX = 0;
         this.knobY = 0;
         this.updateKnobPosition();
@@ -311,7 +443,8 @@ class VirtualStick {
     }
     
     updateKnobPosition() {
-        this.knob.style.transform = `translate(${this.knobX}px, ${this.knobY}px)`;
+        // 중앙 정렬(-50%, -50%)을 유지하면서 knobX, knobY만큼 이동
+        this.knob.style.transform = `translate(calc(-50% + ${this.knobX}px), calc(-50% + ${this.knobY}px))`;
     }
 }
 

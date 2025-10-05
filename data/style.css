@@ -1,0 +1,770 @@
+/* Shane Drone Control - Stylesheet */
+
+:root {
+    --primary: #00b4d8;
+    --secondary: #90e0ef;
+    --success: #52b788;
+    --warning: #ffd60a;
+    --danger: #f72585;
+    --dark: #0a0e27;
+    --card-bg: rgba(255, 255, 255, 0.08);
+    --border: rgba(255, 255, 255, 0.15);
+    --text: #ffffff;
+    --text-muted: rgba(255, 255, 255, 0.7);
+    --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #0a0e27 0%, #1a1f3a 100%);
+    color: var(--text);
+    min-height: 100vh;
+    height: 100vh;
+    overflow: hidden;
+    padding-bottom: 200px;
+}
+
+.container {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 10px 15px;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+/* Header */
+.header {
+    text-align: center;
+    margin-bottom: 15px;
+    padding: 12px 15px;
+    background: var(--card-bg);
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+    border: 1px solid var(--border);
+}
+
+.header h1 {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+.subtitle {
+    color: var(--text-muted);
+    font-size: 12px;
+}
+
+.status-indicator {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--danger);
+    margin-right: 10px;
+    animation: pulse 2s infinite;
+}
+
+.status-indicator.connected {
+    background: var(--success);
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+.rc-pill {
+    display: inline-block;
+    padding: 6px 16px;
+    margin-left: 15px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid var(--border);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.rc-pill.active {
+    background: var(--success);
+    color: #fff;
+    border-color: var(--success);
+}
+
+/* Dashboard Grid */
+.dashboard {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    margin-bottom: 15px;
+}
+
+/* Cards */
+.card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 15px;
+    padding: 12px 15px;
+    backdrop-filter: blur(10px);
+    box-shadow: var(--shadow);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+}
+
+.card h2 {
+    font-size: 15px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    margin-top: 25px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+}
+
+.card h2:first-child {
+    margin-top: 0;
+}
+
+/* Telemetry Grid */
+.telemetry-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.metric {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+}
+
+.metric .label {
+    color: var(--text-muted);
+    font-size: 11px;
+}
+
+.metric .value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--primary);
+}
+
+/* Status Grid */
+.status-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.status-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.status-item .label {
+    min-width: 70px;
+    color: var(--text-muted);
+    font-size: 11px;
+}
+
+.battery-bar {
+    flex: 1;
+    height: 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+}
+
+.battery-level {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--danger), var(--warning), var(--success));
+    transition: width 0.5s ease;
+}
+
+.mode-badge {
+    padding: 4px 12px;
+    border-radius: 6px;
+    background: var(--secondary);
+    color: var(--dark);
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.arm-status {
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.arm-status.armed {
+    background: var(--success);
+    color: white;
+}
+
+.arm-status.disarmed {
+    background: var(--danger);
+    color: white;
+}
+
+/* RC Inputs */
+.rc-inputs {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.rc-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.rc-item .label {
+    min-width: 60px;
+    color: var(--text-muted);
+    font-size: 11px;
+}
+
+.progress-bar {
+    flex: 1;
+    height: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-bar.centered {
+    background: linear-gradient(90deg, 
+        rgba(0,0,0,0.3) 0%, 
+        rgba(255,255,255,0.1) 50%, 
+        rgba(0,0,0,0.3) 100%);
+}
+
+.progress-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--primary);
+    transition: width 0.1s ease;
+}
+
+.progress-fill-centered {
+    position: absolute;
+    height: 100%;
+    background: var(--primary);
+    transition: all 0.1s ease;
+    left: 50%;
+    width: 2px;
+}
+
+.rc-item .value {
+    min-width: 60px;
+    text-align: right;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+/* Motor Grid */
+.motors-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.motor-item {
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+}
+
+.motor-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+}
+
+.motor-bar {
+    height: 8px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: 4px;
+}
+
+.motor-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    transition: width 0.2s ease;
+}
+
+.motor-value {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--primary);
+}
+
+/* Control Buttons */
+.control-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    padding: 10px;
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 15px;
+    backdrop-filter: blur(10px);
+}
+
+/* Mobile Control Buttons - Hidden on Desktop */
+.control-buttons-mobile {
+    display: none;
+}
+
+.btn {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.btn-primary {
+    background: var(--primary);
+    color: white;
+}
+
+.btn-success {
+    background: var(--success);
+    color: white;
+}
+
+.btn-danger {
+    background: var(--danger);
+    color: white;
+}
+
+.btn-warning {
+    background: var(--warning);
+    color: var(--dark);
+}
+
+/* Gyro Grid */
+.gyro-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.gyro-item {
+    text-align: center;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+}
+
+.gyro-item .label {
+    display: block;
+    color: var(--text-muted);
+    font-size: 10px;
+    margin-bottom: 6px;
+}
+
+.gyro-item .value {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--secondary);
+}
+
+/* Visual Drone Status */
+.visual-card {
+    grid-column: span 1;
+    grid-row: span 2;
+}
+
+.drone-visualizer {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+#drone-svg {
+    width: 100%;
+    max-width: 280px;
+    height: auto;
+    margin: 0 auto;
+    display: block;
+}
+
+.propeller {
+    animation: spin 0.3s linear infinite;
+    transform-origin: center;
+    transform-box: fill-box;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.spin-cw {
+    animation: spin 0.3s linear infinite;
+    transform-origin: center;
+    transform-box: fill-box;
+}
+
+.spin-ccw {
+    animation: spin-reverse 0.3s linear infinite;
+    transform-origin: center;
+    transform-box: fill-box;
+}
+
+@keyframes spin-reverse {
+    from { transform: rotate(360deg); }
+    to { transform: rotate(0deg); }
+}
+
+.attitude-info {
+    display: flex;
+    justify-content: space-around;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+}
+
+.attitude-item {
+    text-align: center;
+}
+
+.attitude-item .label {
+    display: block;
+    color: var(--text-muted);
+    font-size: 10px;
+    margin-bottom: 4px;
+}
+
+.attitude-item .value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--primary);
+}
+
+/* Dual Stick Controls */
+.stick-controls {
+    position: fixed;
+    bottom: 15px;
+    left: 20px;
+    right: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.stick-container {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 15px;
+    padding: 10px;
+    backdrop-filter: blur(10px);
+    touch-action: none; /* ← 멀티터치/스크롤 제스처 충돌 방지 */
+}
+
+.stick-label {
+    text-align: center;
+    font-size: 14px;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+}
+
+.stick-base {
+    width: 280px;
+    height: 280px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 3px solid var(--primary);
+    border-radius: 12px;
+    position: relative;
+    touch-action: none;
+    cursor: crosshair;
+    box-shadow: 
+        inset 0 0 25px rgba(163, 193, 199, 0.4),      /* 내부 청록색 글로우 */
+        inset 0 0 50px rgba(23, 60, 66, 0.2),    /* 내부 밝은 청록색 글로우 */
+        0 0 20px rgba(176, 219, 228, 0.5),            /* 외부 청록색 글로우 */
+        0 0 40px rgba(82, 183, 136, 0.3);           /* 외부 녹색 글로우 */
+}
+
+.stick-center {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 100px;
+    height: 100px;
+    border: 1px dashed var(--border);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 0.3;
+}
+
+.stick-knob {
+    position: absolute;
+    width: 70px;
+    height: 70px;
+    background: radial-gradient(circle, var(--primary), var(--secondary));
+    border-radius: 50%;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 4px 20px rgba(0, 180, 216, 0.5);
+    transition: none;
+    pointer-events: none;
+}
+
+.stick-values {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 10px;
+    font-size: 13px;
+    color: var(--text-muted);
+}
+
+.stick-values span {
+    font-weight: 600;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .dashboard {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .visual-card {
+        grid-column: span 2;
+        grid-row: span 1;
+    }
+}
+
+/* 모바일 세로 모드 (portrait)*/
+@media (max-width: 768px) {
+    body {
+        padding-bottom: 380px;
+    }
+    
+    .container {
+        padding: 10px;
+    }
+    
+    .header {
+        margin-bottom: 10px;
+        padding: 10px;
+    }
+    
+    .header h1 {
+        font-size: 18px;
+    }
+    
+    .subtitle {
+        font-size: 11px;
+    }
+    
+    .dashboard {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+    
+    /* 모바일에서 텔레메트리 카드만 표시 */
+    .card {
+        display: none;
+    }
+    
+    .card:first-child {
+        display: block;
+    }
+    
+    .visual-card {
+        display: none !important;
+    }
+    
+    /* 조이스틱 컨트롤 레이아웃 */
+    .stick-controls {
+        flex-direction: column;
+        align-items: center;
+        bottom: 10px;
+        gap: 10px;
+    }
+    
+    /* 조이스틱 크기 절반 (140px) */
+    .stick-container {
+        padding: 8px;
+    }
+    
+    .stick-label {
+        font-size: 12px;
+        margin-bottom: 6px;
+    }
+    
+    .stick-base {
+        width: 140px;
+        height: 140px;
+        border: 2px solid var(--primary);
+        box-shadow: 
+            inset 0 0 20px rgba(194, 207, 209, 0.4),      /* 내부 청록색 글로우 */
+            inset 0 0 40px rgba(28, 105, 121, 0.2),    /* 내부 밝은 청록색 글로우 */
+            0 0 15px rgba(150, 164, 167, 0.5),            /* 외부 청록색 글로우 */
+            0 0 30px rgba(34, 133, 87, 0.3);           /* 외부 녹색 글로우 */
+    }
+    
+    .stick-knob {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .stick-center {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .stick-values {
+        font-size: 11px;
+        margin-top: 6px;
+    }
+    
+    /* 모바일 전용 컨트롤 버튼 표시 */
+    .control-buttons-mobile {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 6px;
+        padding: 8px;
+        background: var(--card-bg);
+        border: 1px solid var(--border);
+        border-radius: 15px;
+        backdrop-filter: blur(10px);
+        margin-bottom: 10px;
+        position: fixed;
+        bottom: 170px;
+        left: 10px;
+        right: 10px;
+        z-index: 100;
+    }
+    
+    /* PC 버전 컨트롤 버튼 숨김 */
+    .control-buttons {
+        display: none;
+    }
+    
+    /* 조이스틱 컨트롤 레이아웃 */
+    .stick-controls {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        bottom: 10px;
+        gap: 10px;
+    }
+    
+    .btn {
+        padding: 8px 6px;
+        font-size: 9px;
+    }
+    
+    .attitude-info {
+        flex-direction: column;
+        gap: 8px;
+    }
+}
+
+/* 모바일 가로 모드 (landscape) */
+@media (max-width: 768px) and (orientation: landscape) {
+    body {
+        padding-bottom: 200px;
+    }
+    
+    .dashboard {
+        margin-bottom: 5px;
+    }
+
+    .control-buttons-mobile {
+        background: rgba(255, 255, 255, 0.01); /* was var(--card-bg) 0.08 */
+    }
+    
+    /* 가로 모드에서 조이스틱 크기 절반으로 축소 */
+    .stick-controls {
+        padding: 5px;
+        background: rgba(255, 255, 255, 0.01); /* 더 투명하게 */
+        backdrop-filter: blur(8px);
+    }
+    
+    .stick-label {
+        font-size: 10px;
+        margin-bottom: 4px;
+    }
+    
+    .stick-base {
+        width: 70px;  /* 140px의 절반 */
+        height: 70px;
+        border: 1px solid var(--primary);
+        box-shadow: 
+            inset 0 0 10px rgba(0, 180, 216, 0.3),
+            inset 0 0 20px rgba(144, 224, 239, 0.1),
+            0 0 8px rgba(0, 180, 216, 0.4),
+            0 0 15px rgba(82, 183, 136, 0.2);
+    }
+    
+    .stick-knob {
+        width: 18px;  /* 35px의 절반 */
+        height: 18px;
+    }
+    
+    .stick-center {
+        width: 25px;  /* 50px의 절반 */
+        height: 25px;
+    }
+    
+    .stick-values {
+        font-size: 9px;
+        margin-top: 4px;
+    }
+    
+    /* 가로 모드에서 컨트롤 버튼 위치 조정 */
+    .control-buttons-mobile {
+        bottom: 85px;
+        padding: 5px;
+        gap: 4px;
+    }
+    
+    .btn {
+        padding: 6px 4px;
+        font-size: 8px;
+    }
+}

@@ -52,6 +52,10 @@ static inline String flightModeName(uint8_t m) {
 #define FS_LABEL "storage"
 #endif
 
+#ifndef WEB_LOG_FS
+#define WEB_LOG_FS
+#endif
+
 static bool mountFS() {
   // Arduino-ESP32 v3.x는 기본 basePath가 "/littlefs"일 수 있음 → 둘 다 시도
   const char* basePaths[] = { "/littlefs", "/" };
@@ -150,10 +154,10 @@ static void wsEvent(AsyncWebSocket*, AsyncWebSocketClient* client, AwsEventType 
               controllerInput.yawNorm      = constrain(r["yaw"].as<float>(), -1.f,  1.f);
               controllerInput.throttleNorm = constrain(r["throttle"].as<float>(),  0.f,  1.f);
 
-              // 디버그 출력 추가 (여기에 넣어야 함)
-              Serial.printf("[WEB] RC: T=%.2f R=%.2f P=%.2f Y=%.2f\n",
-                controllerInput.throttleNorm, controllerInput.rollNorm,
-                controllerInput.pitchNorm, controllerInput.yawNorm);
+              // // 디버그 출력 추가 (여기에 넣어야 함)
+              // Serial.printf("[WEB] RC: T=%.2f R=%.2f P=%.2f Y=%.2f\n",
+              //   controllerInput.throttleNorm, controllerInput.rollNorm,
+              //   controllerInput.pitchNorm, controllerInput.yawNorm);
             }
           }
           const char* cmd = doc["command"] | "";

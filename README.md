@@ -141,7 +141,9 @@ A fatal error occurred: Could not open COM6, the port is busy or doesn't exist.
 
 ### 13. 2025-10-04
 	- LittleFS로 파일 시스템 구축 : 업데이트 이미지
+	- web_async.cpp, platformio.ini, partitions.csv
 	- /data/drone.css, /data/drone.js, /data/index.html
+
 ![현재 상태 화면](./docs/images/화면_캡처_2025-10-04_140257.jpg)
 
 ![현재 상태 화면](./docs/images/화면_캡처_2025-10-04_174858.jpg)
@@ -154,3 +156,10 @@ A fatal error occurred: Could not open COM6, the port is busy or doesn't exist.
 
 ### 14. 2025-10-05
 	- 조이스틱 움직임 : 조이스틱 입력에 렌더링 된다.
+	- Flight Controller 모델 이미지 구성
+	- 상태 시각화
+	- 조이스틱 입력창, 출력창
+	- 모바일 모드 추가
+
+### 최종 모델
+![현재 상태 화면](./docs/images/화면_캡처_2025-10-05_224140.jpg)

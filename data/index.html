@@ -1,79 +1,325 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Shane Drone 3D Control</title>
-  <link rel="stylesheet" href="/drone.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Shane Drone Control</title>
+    <link rel="stylesheet" href="/style.css">
 </head>
 <body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>
+                <span id="ws-status" class="status-indicator"></span>
+                Drone Flight Controller
+                <span id="rc-pill" class="rc-pill">RC OFF</span>
+            </h1>
+            <div class="subtitle">실시간 모니터링 & 제어 시스템</div>
+        </header>
 
-  <div id="canvas3d"></div>
+        <!-- Main Dashboard -->
+        <div class="dashboard">
+            <!-- Telemetry Section -->
+            <div class="card">
+                <h2>📊 텔레메트리</h2>
+                <div class="telemetry-grid">
+                    <div class="metric">
+                        <span class="label">Roll</span>
+                        <span class="value" id="roll">0.0°</span>
+                    </div>
+                    <div class="metric">
+                        <span class="label">Pitch</span>
+                        <span class="value" id="pitch">0.0°</span>
+                    </div>
+                    <div class="metric">
+                        <span class="label">Yaw</span>
+                        <span class="value" id="yaw">0.0°</span>
+                    </div>
+                    <div class="metric">
+                        <span class="label">고도</span>
+                        <span class="value" id="altitude">0.0m</span>
+                    </div>
+                </div>
+                
+                <div class="status-grid">
+                    <div class="status-item">
+                        <span class="label">배터리</span>
+                        <div class="battery-bar">
+                            <div id="battery-level" class="battery-level"></div>
+                        </div>
+                        <span class="value" id="battery">0.00V</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="label">비행 모드</span>
+                        <span class="value mode-badge" id="mode">STABILIZE</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="label">ARM 상태</span>
+                        <span class="value arm-status" id="arm">DISARMED</span>
+                    </div>
+                </div>
 
-  <div class="overlay top-left">
-    <h3><span class="ws" id="ws"></span>연결 상태<span class="rcpill" id="rcpill">(RC OFF)</span></h3>
-    <div class="kv"><span>ARM:</span><b id="arm">DISARMED</b></div>
-    <div class="kv"><span>모드:</span><b id="mode">STABILIZE</b></div>
-    <div class="kv"><span>배터리:</span><b id="battery">0.00V</b></div>
-  </div>
+                <!-- Gyro Data Section -->
+                <h2>🌀 자이로 데이터</h2>
+                <div class="gyro-grid">
+                    <div class="gyro-item">
+                        <span class="label">Gyro X</span>
+                        <span class="value" id="gyro-x">0.0°/s</span>
+                    </div>
+                    <div class="gyro-item">
+                        <span class="label">Gyro Y</span>
+                        <span class="value" id="gyro-y">0.0°/s</span>
+                    </div>
+                    <div class="gyro-item">
+                        <span class="label">Gyro Z</span>
+                        <span class="value" id="gyro-z">0.0°/s</span>
+                    </div>
+                </div>
+            </div>
 
-  <div class="overlay top-right">
-    <h3>자세 정보</h3>
-    <div class="kv"><span>Roll:</span><b id="roll">0.0°</b></div>
-    <div class="kv"><span>Pitch:</span><b id="pitch">0.0°</b></div>
-    <div class="kv"><span>Yaw:</span><b id="yaw">0.0°</b></div>
-  </div>
+            <!-- Visual Drone Status -->
+            <div class="card visual-card">
+                <h2>🚁 상태 시각화</h2>
+                <div class="drone-visualizer">
+                    <svg id="drone-svg" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Gravity Arrow -->
+                        <g id="gravity-arrow">
+                            <line x1="200" y1="200" x2="200" y2="350" stroke="#D4AF37" stroke-width="3" marker-end="url(#arrowhead-down)"/>
+                            <text x="160" y="290" fill="#D4AF37" font-size="14" font-weight="600">Gravity</text>
+                        </g>
+                        
+                        <!-- Thrust Arrow -->
+                        <g id="thrust-arrow">
+                            <line x1="200" y1="200" x2="200" y2="120" stroke="#D4AF37" stroke-width="3" marker-end="url(#arrowhead-up)"/>
+                            <text x="210" y="110" fill="#D4AF37" font-size="14" font-weight="600">Thrust</text>
+                        </g>
+                        
+                        <!-- Wind Arrow -->
+                        <g id="wind-arrow">
+                            <line x1="200" y1="200" x2="380" y2="200" stroke="#5DD5D5" stroke-width="2.5" marker-end="url(#arrowhead-right)"/>
+                            <text x="290" y="205" fill="#5DD5D5" font-size="14" font-weight="600">Wind</text>
+                        </g>
+                        
+                        <!-- Drag Arrow -->
+                        <g id="drag-arrow">
+                            <line x1="200" y1="200" x2="20" y2="200" stroke="#5DD5D5" stroke-width="2.5" marker-end="url(#arrowhead-left)"/>
+                            <text x="40" y="205" fill="#5DD5D5" font-size="14" font-weight="600">Drag</text>
+                        </g>
+                        
+                        <!-- Drone Body -->
+                        <g id="drone-body">
+                            <!-- Center body -->
+                            <ellipse cx="200" cy="200" rx="25" ry="30" fill="#4A5568" stroke="#2D3748" stroke-width="2"/>
+                            <ellipse cx="200" cy="195" rx="20" ry="25" fill="#718096"/>
+                            
+                            <!-- Arms -->
+                            <g id="drone-arms">
+                                <!-- Front-left arm -->
+                                <line x1="200" y1="200" x2="160" y2="160" stroke="#2D3748" stroke-width="8" stroke-linecap="round"/>
+                                <!-- Front-right arm -->
+                                <line x1="200" y1="200" x2="240" y2="160" stroke="#2D3748" stroke-width="8" stroke-linecap="round"/>
+                                <!-- Rear-left arm -->
+                                <line x1="200" y1="200" x2="160" y2="240" stroke="#2D3748" stroke-width="8" stroke-linecap="round"/>
+                                <!-- Rear-right arm -->
+                                <line x1="200" y1="200" x2="240" y2="240" stroke="#2D3748" stroke-width="8" stroke-linecap="round"/>
+                            </g>
+                            
+                            <!-- Motors and Propellers -->
+                            <!-- Front-left motor -->
+                            <circle cx="160" cy="160" r="8" fill="#1A202C" stroke="#4A5568" stroke-width="2"/>
+                            <g id="prop-fl" class="propeller">
+                                <ellipse cx="160" cy="160" rx="30" ry="8" fill="#4A5568" opacity="0.7"/>
+                            </g>
+                            
+                            <!-- Front-right motor -->
+                            <circle cx="240" cy="160" r="8" fill="#1A202C" stroke="#4A5568" stroke-width="2"/>
+                            <g id="prop-fr" class="propeller">
+                                <ellipse cx="240" cy="160" rx="30" ry="8" fill="#4A5568" opacity="0.7"/>
+                            </g>
+                            
+                            <!-- Rear-left motor -->
+                            <circle cx="160" cy="240" r="8" fill="#1A202C" stroke="#4A5568" stroke-width="2"/>
+                            <g id="prop-rl" class="propeller">
+                                <ellipse cx="160" cy="240" rx="30" ry="8" fill="#4A5568" opacity="0.7"/>
+                            </g>
+                            
+                            <!-- Rear-right motor -->
+                            <circle cx="240" cy="240" r="8" fill="#1A202C" stroke="#4A5568" stroke-width="2"/>
+                            <g id="prop-rr" class="propeller">
+                                <ellipse cx="240" cy="240" rx="30" ry="8" fill="#4A5568" opacity="0.7"/>
+                            </g>
+                            
+                            <!-- Rotation indicators for propellers -->
+                            <circle cx="160" cy="160" r="3" fill="#5DD5D5" class="spin-ccw"/>
+                            <circle cx="240" cy="160" r="3" fill="#5DD5D5" class="spin-cw"/>
+                            <circle cx="160" cy="240" r="3" fill="#5DD5D5" class="spin-cw"/>
+                            <circle cx="240" cy="240" r="3" fill="#5DD5D5" class="spin-ccw"/>
+                        </g>
+                        
+                        <!-- Arrow markers -->
+                        <defs>
+                            <marker id="arrowhead-up" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto">
+                                <polygon points="0,8 5,0 10,8" fill="#D4AF37"/>
+                            </marker>
+                            <marker id="arrowhead-down" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto">
+                                <polygon points="0,2 5,10 10,2" fill="#D4AF37"/>
+                            </marker>
+                            <marker id="arrowhead-right" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto">
+                                <polygon points="2,0 10,5 2,10" fill="#5DD5D5"/>
+                            </marker>
+                            <marker id="arrowhead-left" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto">
+                                <polygon points="8,0 0,5 8,10" fill="#5DD5D5"/>
+                            </marker>
+                        </defs>
+                    </svg>
+                </div>
+                <div class="attitude-info">
+                    <div class="attitude-item">
+                        <span class="label">Roll:</span>
+                        <span class="value" id="visual-roll">0.0°</span>
+                    </div>
+                    <div class="attitude-item">
+                        <span class="label">Pitch:</span>
+                        <span class="value" id="visual-pitch">0.0°</span>
+                    </div>
+                    <div class="attitude-item">
+                        <span class="label">Yaw:</span>
+                        <span class="value" id="visual-yaw">0.0°</span>
+                    </div>
+                </div>
+            </div>
 
-  <div class="overlay left-below">
-    <h3>조이스틱 입력</h3>
-    <div class="kv"><span>RC Roll:</span><b id="rcRoll">0.00</b></div>
-    <div class="kv"><span>RC Pitch:</span><b id="rcPitch">0.00</b></div>
-    <div class="kv"><span>RC Yaw:</span><b id="rcYaw">0.00</b></div>
-    <div class="kv"><span>RC Throttle:</span><b id="rcThr">0%</b></div>
-  </div>
+            <!-- Motor Output Section -->
+            <div class="card">
+                <h2>⚙️ 모터 출력</h2>
+                <div class="motors-grid">
+                    <div class="motor-item">
+                        <div class="motor-label">FL (앞-왼)</div>
+                        <div class="motor-bar">
+                            <div id="motor-fl" class="motor-fill"></div>
+                        </div>
+                        <span class="motor-value" id="motor-fl-value">1000</span>
+                    </div>
+                    <div class="motor-item">
+                        <div class="motor-label">FR (앞-오)</div>
+                        <div class="motor-bar">
+                            <div id="motor-fr" class="motor-fill"></div>
+                        </div>
+                        <span class="motor-value" id="motor-fr-value">1000</span>
+                    </div>
+                    <div class="motor-item">
+                        <div class="motor-label">RL (뒤-왼)</div>
+                        <div class="motor-bar">
+                            <div id="motor-rl" class="motor-fill"></div>
+                        </div>
+                        <span class="motor-value" id="motor-rl-value">1000</span>
+                    </div>
+                    <div class="motor-item">
+                        <div class="motor-label">RR (뒤-오)</div>
+                        <div class="motor-bar">
+                            <div id="motor-rr" class="motor-fill"></div>
+                        </div>
+                        <span class="motor-value" id="motor-rr-value">1000</span>
+                    </div>
+                </div>
+                <div> </div>
 
-  <div class="overlay right-below">
-    <h3>모터 출력</h3>
-    <div class="motor-grid">
-      <div class="motor-item">
-        <div>FL</div>
-        <div class="motor-bar"><div class="motor-fill" id="mfl"></div></div>
-        <div id="mflv">1000</div>
-      </div>
-      <div class="motor-item">
-        <div>FR</div>
-        <div class="motor-bar"><div class="motor-fill" id="mfr"></div></div>
-        <div id="mfrv">1000</div>
-      </div>
-      <div class="motor-item">
-        <div>RL</div>
-        <div class="motor-bar"><div class="motor-fill" id="mrl"></div></div>
-        <div id="mrlv">1000</div>
-      </div>
-      <div class="motor-item">
-        <div>RR</div>
-        <div class="motor-bar"><div class="motor-fill" id="mrr"></div></div>
-        <div id="mrrv">1000</div>
-      </div>
+                <!-- RC Input Section -->
+                <h2>🎮 조이스틱 입출력</h2>
+                <div class="rc-inputs">
+                    <div class="rc-item">
+                        <span class="label">Throttle</span>
+                        <div class="progress-bar">
+                            <div id="rc-throttle-bar" class="progress-fill"></div>
+                        </div>
+                        <span class="value" id="rc-throttle">0%</span>
+                    </div>
+                    <div class="rc-item">
+                        <span class="label">Roll</span>
+                        <div class="progress-bar centered">
+                            <div id="rc-roll-bar" class="progress-fill-centered"></div>
+                        </div>
+                        <span class="value" id="rc-roll">0.00</span>
+                    </div>
+                    <div class="rc-item">
+                        <span class="label">Pitch</span>
+                        <div class="progress-bar centered">
+                            <div id="rc-pitch-bar" class="progress-fill-centered"></div>
+                        </div>
+                        <span class="value" id="rc-pitch">0.00</span>
+                    </div>
+                    <div class="rc-item">
+                        <span class="label">Yaw</span>
+                        <div class="progress-bar centered">
+                            <div id="rc-yaw-bar" class="progress-fill-centered"></div>
+                        </div>
+                        <span class="value" id="rc-yaw">0.00</span>
+                    </div>
+                </div>
+            </div>           
+        </div>
+
+        <!-- Control Section (Mobile Only) -->
+        <div class="control-buttons-mobile">
+            <button class="btn btn-primary" onclick="sendCommand('CALIBRATE')">
+                센서 캘리브레이션
+            </button>
+            <button class="btn btn-success" onclick="sendCommand('RESET_PID')">
+                PID 리셋
+            </button>
+            <button class="btn btn-danger" onclick="sendCommand('EMERGENCY_STOP')">
+                비상 정지
+            </button>
+            <button class="btn btn-warning" id="toggle-rc-btn-mobile" onclick="toggleRC()">
+                RC 토글
+            </button>
+        </div>
+
+        <!-- Dual Stick Controls -->
+        <div class="stick-controls">
+            <div class="stick-container" id="left-stick">
+                <div class="stick-label">Throttle / Yaw</div>
+                <div class="stick-base">
+                    <div class="stick-knob" id="left-knob"></div>
+                    <div class="stick-center"></div>
+                </div>
+                <div class="stick-values">
+                    <span>T: <span id="left-throttle">0%</span></span>
+                    <span>Y: <span id="left-yaw">0.00</span></span>
+                </div>
+            </div>
+
+            <!-- Control Section (Desktop Only) -->
+            <div class="control-buttons">
+                <button class="btn btn-primary" onclick="sendCommand('CALIBRATE')">
+                    센서 캘리브레이션
+                </button>
+                <button class="btn btn-success" onclick="sendCommand('RESET_PID')">
+                    PID 리셋
+                </button>
+                <button class="btn btn-danger" onclick="sendCommand('EMERGENCY_STOP')">
+                    비상 정지
+                </button>
+                <button class="btn btn-warning" id="toggle-rc-btn" onclick="toggleRC()">
+                    RC 토글
+                </button>
+            </div>
+            
+            <div class="stick-container" id="right-stick">
+                <div class="stick-label">Roll / Pitch</div>
+                <div class="stick-base">
+                    <div class="stick-knob" id="right-knob"></div>
+                    <div class="stick-center"></div>
+                </div>
+                <div class="stick-values">
+                    <span>R: <span id="right-roll">0.00</span></span>
+                    <span>P: <span id="right-pitch">0.00</span></span>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
 
-  <div class="overlay bottom-center">
-    <h3>제어</h3>
-    <div class="btns">
-      <button onclick="cmd('CALIBRATE')">캘리브레이션</button>
-      <button onclick="cmd('RESET_PID')">PID 리셋</button>
-      <button class="danger" onclick="cmd('EMERGENCY_STOP')">비상정지</button>
-      <button onclick="toggleRc()">RC 토글</button>
-    </div>
-  </div>
-
-  <div class="sticks">
-    <div class="stick" id="stickL"><div class="knob" id="knobL"></div></div>
-    <div class="stick" id="stickR"><div class="knob" id="knobR"></div></div>
-  </div>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-  <script src="/drone.js"></script>
+    <script src="/script.js"></script>
 </body>
 </html>
