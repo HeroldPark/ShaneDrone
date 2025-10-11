@@ -47,19 +47,36 @@ static inline String flightModeName(uint8_t m) {
   }
 }
 
-// LittleFS 마운트: CSV의 파티션 name(라벨)과 맞춰주세요(예: "storage")
+// CSV의 spiffs 파티션 이름과 일치
 #ifndef FS_LABEL
-#define FS_LABEL "storage"
+#define FS_LABEL "spiffs"
 #endif
 
 #ifndef WEB_LOG_FS
 #define WEB_LOG_FS
 #endif
 
+// static bool mountFS() {
+//   // Arduino-ESP32 v3.x는 기본 basePath가 "/littlefs"일 수 있음 → 둘 다 시도
+//   const char* basePaths[] = { "/littlefs", "/" };
+//   const char* labels[]    = { FS_LABEL, nullptr, "littlefs", "spiffs" };
+
+//   for (auto base : basePaths) {
+//     for (auto label : labels) {
+//       if (LittleFS.begin(false, base, 10, label)) {
+//         Serial.printf("[FS] Mounted: base=%s, label=%s\n", base, label ? label : "(default)");
+//         return true;
+//       }
+//     }
+//   }
+//   Serial.println("[FS] mount failed");
+//   return false;
+// }
+
 static bool mountFS() {
-  // Arduino-ESP32 v3.x는 기본 basePath가 "/littlefs"일 수 있음 → 둘 다 시도
-  const char* basePaths[] = { "/littlefs", "/" };
-  const char* labels[]    = { FS_LABEL, nullptr, "littlefs", "spiffs" };
+  // SPIFFS 파티션 사용
+  const char* basePaths[] = { "/spiffs", "/littlefs", "/" };
+  const char* labels[]    = { "spiffs", FS_LABEL, nullptr, "littlefs" };
 
   for (auto base : basePaths) {
     for (auto label : labels) {

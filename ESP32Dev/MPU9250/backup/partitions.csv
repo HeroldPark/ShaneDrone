@@ -1,0 +1,15 @@
+# Name,     Type, SubType, Offset,   Size,     Flags
+nvs,        data, nvs,     0x9000,   0x5000,
+otadata,    data, ota,     0xe000,   0x2000,
+app0,       app,  ota_0,   0x10000,  0x140000,
+app1,       app,  ota_1,   0x150000, 0x140000,
+spiffs,     data, spiffs,  0x290000, 0x70000,
+
+# 설명: Arduino nano esp32 default partition layout
+# nvs (0x9000, 20KB) - WiFi/Bluetooth 설정 저장
+# otadata (0xe000, 8KB) - OTA 상태
+# app0 (0x10000, 1280KB) - 메인 펌웨어
+# app1 (0x150000, 1280KB) - OTA 백업 펌웨어
+# spiffs (0x290000, 448KB) - 파일 시스템
+
+# 총 사용: ~2MB (ESP32-S3은 최소 4MB 플래시 필요)

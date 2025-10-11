@@ -15,8 +15,17 @@
 // =================================
 
 // I2C 핀 (MPU9250용)
-#define SDA_PIN 21
-#define SCL_PIN 22
+// #define SDA_PIN 21
+// #define SCL_PIN 22
+#define SDA_PIN 11
+#define SCL_PIN 12
+
+// Arduino Nano ESP32의 실제 GPIO 번호 사용
+// #define SDA_PIN 38  // D11 = GPIO38
+// #define SCL_PIN 47  // D12 = GPIO47
+
+// I2C 타임아웃 설정 추가 (부트루프 방지)
+#define I2C_TIMEOUT_MS 100
 
 // ESC PWM 핀 (4-in-1 ESC 20x20mm)
 #define MOTOR_FL_PIN 5 // Front Left
@@ -67,8 +76,10 @@
 // 센서 설정 (MPU9250)
 // =================================
 
-// MPU9250 I2C 주소
+// MPU9250 I2C 주소 (AD0 = GND인 경우)
 #define MPU9250_ADDRESS 0x68
+// 대체 주소 (AD0 = VCC인 경우)
+#define MPU9250_ADDRESS_ALT 0x69
 #define AK8963_ADDRESS 0x0C
 
 // 센서 범위 설정

@@ -163,3 +163,8 @@ A fatal error occurred: Could not open COM6, the port is busy or doesn't exist.
 
 ### 최종 모델
 ![현재 상태 화면](./docs/images/화면_캡처_2025-10-05_224140.jpg)
+
+### 15. 2025-10-11
+	- 모든 방법을 동원해도 GY-9250(MPU9250) 모듈로는 Arduino nano esp32와 I2C 통신이 안된다.
+	- 모듈 불량으로 생각된다.(재 구매 필요)
+	- 재구매 후 MPU9250 프로젝트에서 연결 시험 해 보면 된다.

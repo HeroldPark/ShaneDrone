@@ -1,0 +1,8 @@
+{
+  "scripts": {
+    "upload:watch": "pio run -e arduino_nano_esp32 -t upload --upload-port COM9 && node auto-monitor.js -b 115200 -t 20 -c 2341:0070 --exclude COM9"
+  },
+  "devDependencies": {
+    "serialport": "^13.0.0"
+  }
+}
