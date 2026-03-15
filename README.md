@@ -1,5 +1,18 @@
 # Pavo Pico Drone
 
+<!-- npm install -g @anthropic-ai/claude-code -->
+> claude --dangerously-skip-permissions
+
+● Bash(cmd.exe /c "tasklist /fi \"imagename eq pio.exe\" 2>&1")
+  ⎿  Image Name                     PID Session Name        Session#    Mem Usage
+     ========================= ======== ================ =========== ============
+     pio.exe                       8364 Console                    1      3,636 K
+
+● pio.exe 프로세스가 하나 실행 중입니다 — 이게 COM4를 잡고 있는 것입니다. 종료합니다:
+
+● Bash(cmd.exe /c "taskkill /F /PID 8364 2>&1")
+  ⎿  SUCCESS: The process with PID 8364 has been terminated.
+
 ## 2025-08-14
 	- Arduino IDE => PlatformIO project로 변경
 	- 더 다양한 기능 지원
@@ -168,3 +181,40 @@ A fatal error occurred: Could not open COM6, the port is busy or doesn't exist.
 	- 모든 방법을 동원해도 GY-9250(MPU9250) 모듈로는 Arduino nano esp32와 I2C 통신이 안된다.
 	- 모듈 불량으로 생각된다.(재 구매 필요)
 	- 재구매 후 MPU9250 프로젝트에서 연결 시험 해 보면 된다.
+
+### 16. 2025-11-01
+	- 고장인가 해서 재구매한 MPU9250으로 Arduino nano esp32와 연동 테스트 했는데 정상 동작 하지 않는다.
+	- I2C 장치를 찾지 못한다.
+	- copy backup/i2c_debug_test.cpp src/main.cpp
+	- pio run -t upload -t monitor
+	
+```
+1️⃣  I2C 설정
+─────────────────────────────────────
+I2C 설정: Wire.begin() - 기본 핀 사용
+  Arduino Nano ESP32 기본 I2C:
+    D11 (GPIO11) = SDA
+    D12 (GPIO12) = SCL
+
+2️⃣  Wire 라이브러리 초기화
+─────────────────────────────────────
+  호출: Wire.begin()  // 인자 없음!
+[  4176][I][esp32-hal-i2c.c:75] i2cInit(): Initialising I2C Master: sda=11 scl=12 freq=100000
+  ✓ Wire 초기화 성공!
+  ✓ 클럭: 100kHz
+  ✓ 타임아웃: 100ms
+
+3️⃣  I2C 버스 스캔
+─────────────────────────────────────
+┌────────┬──────────────────────┐
+│ 주소   │ 상태                 │
+├────────┼──────────────────────┤
+└────────┴──────────────────────┘
+총 0개의 I2C 장치 발견
+
+╔════════════════════════════════════════╗
+║   I2C 장치 발견 실패!                ║
+╚════════════════════════════════════════╝
+```
+	- 브레드보드 구매 : BusBoard BB830
+	- 멀티메터 구매 : UNI-T UT33D

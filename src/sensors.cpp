@@ -1,5 +1,6 @@
 /*
- * sensors.cpp - MPU9250 센서 처리 (수정됨 - 안전한 I2C 통신)
+ * sensors.cpp - MPU9250 센서 처리
+ * Arduino Nano ESP32 전용 - Wire.begin() 기본 핀 사용
  */
 
 #include "../include/sensors.h"
@@ -17,7 +18,7 @@ static bool sensorInitialized = false;
 static bool sensorCalibrated = false;
 static bool simulationMode = false;
 
-// ✅ I2C 타임아웃 추가
+// I2C 안전 통신 함수
 static bool safeI2CWrite(uint8_t address, uint8_t reg, uint8_t data) {
   Wire.beginTransmission(address);
   Wire.write(reg);
@@ -31,7 +32,6 @@ static bool safeI2CRead(uint8_t address, uint8_t reg, uint8_t* buffer, size_t le
   Wire.write(reg);
   if (Wire.endTransmission(false) != 0) return false;
   
-  // ✅ 수정: stopBit 파라미터를 bool로 명시
   size_t received = Wire.requestFrom(address, len, (bool)true);
   if (received != len) return false;
   
@@ -46,138 +46,228 @@ static bool safeI2CRead(uint8_t address, uint8_t reg, uint8_t* buffer, size_t le
 }
 
 bool initializeSensors() {
-  Serial.println("MPU9250 센서 초기화 중...");
+  Serial.println("\n╔════════════════════════════════════════╗");
+  Serial.println("║   MPU9250 센서 초기화                 ║");
+  Serial.println("╚════════════════════════════════════════╝\n");
   
-  // ✅ I2C 초기화 (클럭 속도 100kHz로 안정성 확보)
-  Wire.begin(SDA_PIN, SCL_PIN);
+  // ========================================
+  // 1단계: I2C 핀 정보 출력
+  // ========================================
+  Serial.println("1️⃣  I2C 설정");
+  Serial.println("─────────────────────────────────────");
+  I2C_PIN_DEBUG_INFO();
+  Serial.println();
+  
+  // ========================================
+  // 2단계: Wire 초기화 (기본 핀 사용)
+  // ========================================
+  Serial.println("2️⃣  Wire 라이브러리 초기화");
+  Serial.println("─────────────────────────────────────");
+  Serial.println("  호출: Wire.begin()  // 인자 없음!");
+  
+  // ⚠️ CRITICAL: Arduino Nano ESP32에서는 Wire.begin()을
+  // 인자 없이 호출해야 올바른 핀(GPIO11, GPIO12)이 사용됨!
+  bool i2cSuccess = Wire.begin();
+  
+  if (!i2cSuccess) {
+    Serial.println("  ✗ Wire.begin() 실패!");
+    Serial.println("\n가능한 원인:");
+    Serial.println("  1. I2C 하드웨어 문제");
+    Serial.println("  2. 펌웨어 문제");
+    return false;
+  }
+  
+  Serial.println("  ✓ Wire 초기화 성공!");
+  
+  // I2C 설정
   Wire.setClock(100000);
   Wire.setTimeOut(I2C_TIMEOUT_MS);
-  
-  Serial.printf("I2C 초기화: SDA=GPIO%d, SCL=GPIO%d\n", SDA_PIN, SCL_PIN);
+  Serial.println("  ✓ 클럭: 100kHz");
+  Serial.println("  ✓ 타임아웃: 100ms");
   delay(100);
-
-  // ✅ I2C 스캔 (디바이스 탐지)
-  Serial.println("I2C 장치 스캔 중...");
-  byte error, address;
+  
+  // ========================================
+  // 3단계: I2C 장치 스캔
+  // ========================================
+  Serial.println("\n3️⃣  I2C 버스 스캔");
+  Serial.println("─────────────────────────────────────");
+  Serial.println("┌────────┬──────────────────────┐");
+  Serial.println("│ 주소   │ 상태                 │");
+  Serial.println("├────────┼──────────────────────┤");
+  
   int nDevices = 0;
   
-  for (address = 1; address < 127; address++) {
+  for (uint8_t address = 1; address < 127; address++) {
     Wire.beginTransmission(address);
-    error = Wire.endTransmission();
+    uint8_t error = Wire.endTransmission();
     
     if (error == 0) {
-      Serial.printf("I2C 장치 발견: 0x%02X\n", address);
+      Serial.printf("│ 0x%02X   │ ✓ 발견", address);
+      
+      if (address == 0x68 || address == 0x69) {
+        Serial.print(" (MPU9250)");
+      } else if (address == 0x0C) {
+        Serial.print(" (AK8963)");
+      }
+      Serial.println("         │");
       nDevices++;
     }
   }
   
+  Serial.println("└────────┴──────────────────────┘");
+  Serial.printf("총 %d개의 I2C 장치 발견\n\n", nDevices);
+  
   if (nDevices == 0) {
-    Serial.println("ERROR: I2C 장치가 발견되지 않았습니다!");
-    Serial.println("하드웨어 연결을 확인하세요:");
-    Serial.println("  - GY-9250 VCC → 3.3V");
-    Serial.println("  - GY-9250 GND → GND");
+    Serial.println("╔════════════════════════════════════════╗");
+    Serial.println("║   I2C 장치 발견 실패!                ║");
+    Serial.println("╚════════════════════════════════════════╝");
+    Serial.println("\n⚠️  하드웨어 체크리스트:");
+    Serial.println("");
+    Serial.println("  [1] MPU9250 전원 연결");
+    Serial.println("      ✓ VCC → Arduino 3.3V");
+    Serial.println("      ✓ GND → Arduino GND");
+    Serial.println("");
+    Serial.println("  [2] I2C 연결 (Arduino Nano ESP32)");
+    Serial.println("      ✓ MPU9250 SCL → Arduino D12");
+    Serial.println("      ✓ MPU9250 SDA → Arduino D11");
+    Serial.println("");
+    Serial.println("  [3] I2C 모드 활성화 ⚠️ 중요!");
+    Serial.println("      ✓ MPU9250 NCS → Arduino 3.3V");
+    Serial.println("      ✓ MPU9250 AD0 → Arduino GND");
+    Serial.println("");
+    Serial.println("  [4] 배선 확인");
+    Serial.println("      ✓ 브레드보드 접촉");
+    Serial.println("      ✓ 와이어 불량 확인");
+    Serial.println("      ✓ SDA/SCL 교차 안 됨");
+    Serial.println("");
+    Serial.println("╔════════════════════════════════════════╗");
+    Serial.println("║  ⚠️  NCS 핀을 3.3V에 연결하지 않으면  ║");
+    Serial.println("║     MPU9250이 SPI 모드로 동작!       ║");
+    Serial.println("╚════════════════════════════════════════╝");
     
-    Serial.println("  - GY-9250 SDA → D21 (GPIO11)");
-    Serial.println("  - GY-9250 SCL → D22 (GPIO12)");
-
-    // Serial.println("  - GY-9250 SDA → D11 (GPIO38)");
-    // Serial.println("  - GY-9250 SCL → D12 (GPIO47)");
-    
-    Serial.println("  - GY-9250 AD0 → GND (0x68 주소용)");
-    Serial.println("  - GY-9250 NCS → 3.3V (필수!)");
+    Serial.println("\n→ 시뮬레이션 모드로 전환");
+    simulationMode = true;
     return false;
   }
-  
-  Serial.printf("총 %d개의 I2C 장치 발견\n", nDevices);
 
-  // ✅ MPU9250 연결 확인 (0x68 또는 0x69 시도)
+  // ========================================
+  // 4단계: MPU9250 연결 확인
+  // ========================================
+  Serial.println("4️⃣  MPU9250 통신 확인");
+  Serial.println("─────────────────────────────────────");
   if (!testMPU9250Connection()) {
-    Serial.println("ERROR: MPU9250 연결 실패");
-    Serial.println("시뮬레이션 모드로 전환합니다...");
+    Serial.println("✗ MPU9250 통신 실패");
+    Serial.println("→ 시뮬레이션 모드로 전환");
     simulationMode = true;
     return false;
   }
   
-  // MPU9250 설정
+  // ========================================
+  // 5단계: MPU9250 설정
+  // ========================================
+  Serial.println("\n5️⃣  MPU9250 레지스터 설정");
+  Serial.println("─────────────────────────────────────");
   if (!configureMPU9250()) {
-    Serial.println("ERROR: MPU9250 설정 실패");
+    Serial.println("✗ 설정 실패");
     return false;
   }
   
-  // 자기계 초기화 (실패해도 계속 진행)
+  // ========================================
+  // 6단계: 자기계 초기화 (선택)
+  // ========================================
+  Serial.println("\n6️⃣  AK8963 자기계 초기화");
+  Serial.println("─────────────────────────────────────");
   if (!initializeAK8963()) {
-    Serial.println("WARNING: AK8963(자기계) 초기화 실패 - 자이로/가속도계만 사용");
+    Serial.println("⚠  자기계 초기화 실패 (자이로/가속도계만 사용)");
   }
   
-  Serial.println("센서 초기화 완료!");
+  Serial.println("\n╔════════════════════════════════════════╗");
+  Serial.println("║   ✅ 센서 초기화 완료!               ║");
+  Serial.println("╚════════════════════════════════════════╝\n");
   sensorInitialized = true;
   
-  // 자동 캘리브레이션
-  Serial.println("센서 캘리브레이션 시작 (5초간 드론을 고정하세요)...");
-  delay(2000);  // 준비 시간
+  // ========================================
+  // 7단계: 자동 캘리브레이션
+  // ========================================
+  Serial.println("7️⃣  센서 캘리브레이션");
+  Serial.println("─────────────────────────────────────");
+  Serial.println("⚠️  드론을 평평한 곳에 5초간 고정하세요...\n");
+  delay(2000);
   calibrateSensors();
   
   return true;
 }
 
 bool testMPU9250Connection() {
-  // ✅ 0x68 주소 먼저 시도
+  Serial.println("  WHO_AM_I 레지스터 읽기...");
+  
+  // 0x68 주소 시도
   uint8_t whoami = 0xFF;
   if (safeI2CRead(MPU9250_ADDRESS, 0x75, &whoami, 1)) {
+    Serial.printf("    0x68 응답: 0x%02X ", whoami);
     if (whoami == 0x71 || whoami == 0x73) {
-      Serial.printf("MPU9250 감지됨 at 0x68 (ID: 0x%02X)\n", whoami);
+      Serial.println("✓ MPU9250 확인!");
       return true;
     }
+    Serial.println("(ID 불일치)");
+  } else {
+    Serial.println("    0x68 응답 없음");
   }
   
-  // ✅ 0x69 주소 시도
+  // 0x69 주소 시도
   if (safeI2CRead(MPU9250_ADDRESS_ALT, 0x75, &whoami, 1)) {
+    Serial.printf("    0x69 응답: 0x%02X ", whoami);
     if (whoami == 0x71 || whoami == 0x73) {
-      Serial.printf("MPU9250 감지됨 at 0x69 (ID: 0x%02X)\n", whoami);
-      // config.h에서 주소 변경 필요 (또는 동적으로 변경)
+      Serial.println("✓ MPU9250 확인!");
+      Serial.println("    ※ config.h에서 MPU9250_ADDRESS를 0x69로 변경 필요");
       return true;
     }
+    Serial.println("(ID 불일치)");
+  } else {
+    Serial.println("    0x69 응답 없음");
   }
   
-  Serial.printf("ERROR: WHO_AM_I 응답 오류 (0x%02X)\n", whoami);
-  Serial.println("가능한 원인:");
-  Serial.println("  1. NCS 핀이 3.3V에 연결되지 않음 (SPI 모드로 동작 중)");
-  Serial.println("  2. 배선 불량 (SDA/SCL 교차 연결 확인)");
-  Serial.println("  3. 전원 부족 (3.3V 전압 확인)");
+  Serial.println("\n  MPU9250 인식 실패!");
+  Serial.println("  가능한 원인:");
+  Serial.println("    - NCS 핀 미연결 (SPI 모드)");
+  Serial.println("    - SDA/SCL 배선 오류");
+  Serial.println("    - 전원 문제");
+  Serial.println("    - 모듈 불량");
+  
   return false;
 }
 
 bool configureMPU9250() {
-  Serial.println("MPU9250 설정 중...");
-  
   // 소프트웨어 리셋
   if (!safeI2CWrite(MPU9250_ADDRESS, 0x6B, 0x80)) {
-    Serial.println("ERROR: 리셋 실패");
+    Serial.println("  ✗ 리셋 실패");
     return false;
   }
   delay(100);
+  Serial.println("  ✓ 리셋");
   
   // 클럭 소스 설정
   if (!safeI2CWrite(MPU9250_ADDRESS, 0x6B, 0x01)) return false;
   delay(10);
   
-  // 샘플레이트 설정
+  // 샘플레이트
   if (!safeI2CWrite(MPU9250_ADDRESS, 0x19, 0x00)) return false;
   
-  // 자이로 설정 (±2000dps, DLPF 41Hz)
+  // 자이로 (±2000dps, DLPF 41Hz)
   if (!safeI2CWrite(MPU9250_ADDRESS, 0x1A, GYRO_DLPF_CFG)) return false;
   if (!safeI2CWrite(MPU9250_ADDRESS, 0x1B, 0x18)) return false;
+  Serial.println("  ✓ 자이로 (±2000dps)");
   
-  // 가속도계 설정 (±8g, DLPF 41Hz)
+  // 가속도계 (±8g, DLPF 41Hz)
   if (!safeI2CWrite(MPU9250_ADDRESS, 0x1C, 0x10)) return false;
   if (!safeI2CWrite(MPU9250_ADDRESS, 0x1D, ACCEL_DLPF_CFG)) return false;
+  Serial.println("  ✓ 가속도계 (±8g)");
   
-  // I2C 마스터 활성화 (자기계 접근용)
+  // I2C 마스터 (자기계용)
   if (!safeI2CWrite(MPU9250_ADDRESS, 0x6A, 0x20)) return false;
   if (!safeI2CWrite(MPU9250_ADDRESS, 0x24, 0x0D)) return false;
   
   delay(10);
-  Serial.println("MPU9250 설정 완료");
   return true;
 }
 
@@ -188,22 +278,21 @@ bool initializeAK8963() {
   }
   
   if (whoami != 0x48) {
-    Serial.printf("AK8963 ID 오류: 0x%02X\n", whoami);
+    Serial.printf("  AK8963 ID: 0x%02X (예상: 0x48)\n", whoami);
     return false;
   }
   
-  // 나머지 자기계 초기화 코드...
-  Serial.println("AK8963 초기화 완료");
+  Serial.println("  ✓ AK8963 초기화 완료");
   return true;
 }
 
 void calibrateSensors() {
   if (!sensorInitialized) {
-    Serial.println("ERROR: 센서가 초기화되지 않음");
+    Serial.println("✗ 센서가 초기화되지 않음");
     return;
   }
   
-  Serial.println("캘리브레이션 중... (드론을 움직이지 마세요)");
+  Serial.println("  캘리브레이션 진행 중...\n");
   
   float gyroSumX = 0, gyroSumY = 0, gyroSumZ = 0;
   float accelSumX = 0, accelSumY = 0, accelSumZ = 0;
@@ -223,8 +312,13 @@ void calibrateSensors() {
       validSamples++;
     }
     
-    if (i % 50 == 0) {
-      Serial.printf("진행: %d%%\n", (i * 100) / CALIBRATION_SAMPLES);
+    if (i % 100 == 0) {
+      int percent = (i * 100) / CALIBRATION_SAMPLES;
+      Serial.printf("  진행: %3d%% [", percent);
+      for (int j = 0; j < 20; j++) {
+        Serial.print(j < percent/5 ? "█" : "░");
+      }
+      Serial.println("]");
     }
     
     delay(2);
@@ -241,16 +335,21 @@ void calibrateSensors() {
     
     sensorCalibrated = true;
     
-    Serial.println("=== 캘리브레이션 완료 ===");
-    Serial.printf("Gyro 오프셋: X=%.2f, Y=%.2f, Z=%.2f\n", 
+    Serial.println("\n  ╔══════════════════════════════╗");
+    Serial.println("  ║   캘리브레이션 완료!        ║");
+    Serial.println("  ╚══════════════════════════════╝");
+    Serial.printf("  Gyro: X=%+.2f, Y=%+.2f, Z=%+.2f deg/s\n",
                   gyroOffsetX, gyroOffsetY, gyroOffsetZ);
+    Serial.printf("  Accel: X=%+.2f, Y=%+.2f, Z=%+.2f m/s²\n",
+                  accelOffsetX, accelOffsetY, accelOffsetZ);
   } else {
-    Serial.println("ERROR: 캘리브레이션 실패 - 센서 데이터 부족");
+    Serial.println("\n  ✗ 캘리브레이션 실패");
+    Serial.printf("  유효 샘플: %d / %d\n", validSamples, CALIBRATION_SAMPLES);
   }
 }
 
 void calibrateGyroscope() {
-  Serial.println("자이로스코프 빠른 캘리브레이션...");
+  Serial.println("자이로 빠른 캘리브레이션...");
   
   float gyroSumX = 0, gyroSumY = 0, gyroSumZ = 0;
   int samples = 100;
@@ -269,7 +368,7 @@ void calibrateGyroscope() {
   gyroOffsetY = gyroSumY / samples;
   gyroOffsetZ = gyroSumZ / samples;
   
-  Serial.println("자이로 캘리브레이션 완료");
+  Serial.println("✓ 자이로 캘리브레이션 완료");
 }
 
 bool readSensorData(SensorData* data) {
@@ -305,7 +404,6 @@ bool readSensorData(SensorData* data) {
     return false;
   }
   
-  // 캘리브레이션 적용
   data->accelX = rawData.accelX - accelOffsetX;
   data->accelY = rawData.accelY - accelOffsetY;
   data->accelZ = rawData.accelZ - accelOffsetZ;
@@ -347,18 +445,16 @@ bool readRawSensorData(RawSensorData* data) {
   data->gyroY = (float)gyroY_raw / 16.4;
   data->gyroZ = (float)gyroZ_raw / 16.4;
   
-  // 자기계 데이터 (실패 시 무시)
   readMagnetometerData(&data->magX, &data->magY, &data->magZ);
   
   return true;
 }
 
 bool readMagnetometerData(float* magX, float* magY, float* magZ) {
-  // 자기계 읽기 (간소화)
   *magX = 0.0;
   *magY = 0.0;
   *magZ = 0.0;
-  return false;  // 일단 비활성화
+  return false;
 }
 
 void updateAttitude(SensorData* data) {
@@ -366,9 +462,7 @@ void updateAttitude(SensorData* data) {
   float deltaTime = (currentTime - lastFilterUpdate) / 1000000.0f;
   lastFilterUpdate = currentTime;
   
-  if (deltaTime > 0.1f) {
-    deltaTime = 0.001f;
-  }
+  if (deltaTime > 0.1f) deltaTime = 0.001f;
   
   float accelRoll = atan2(data->accelY, sqrt(data->accelX * data->accelX + data->accelZ * data->accelZ)) * RAD_TO_DEG;
   float accelPitch = atan2(-data->accelX, sqrt(data->accelY * data->accelY + data->accelZ * data->accelZ)) * RAD_TO_DEG;
@@ -397,39 +491,24 @@ float normalizeAngle(float angle) {
 }
 
 bool checkSensorHealth() {
-  if (!sensorInitialized || simulationMode) {
-    return false;
-  }
+  if (!sensorInitialized || simulationMode) return false;
   
   uint8_t whoami = 0;
-  if (!safeI2CRead(MPU9250_ADDRESS, 0x75, &whoami, 1)) {
-    return false;
-  }
-  
-  if (whoami != 0x71 && whoami != 0x73) {
-    Serial.println("MPU9250 연결 끊김");
-    return false;
-  }
+  if (!safeI2CRead(MPU9250_ADDRESS, 0x75, &whoami, 1)) return false;
+  if (whoami != 0x71 && whoami != 0x73) return false;
   
   RawSensorData testData;
-  if (readRawSensorData(&testData)) {
-    if (abs(testData.accelX) > 50.0 || abs(testData.accelY) > 50.0 || abs(testData.accelZ) > 50.0) {
-      return false;
-    }
-    if (abs(testData.gyroX) > 3000.0 || abs(testData.gyroY) > 3000.0 || abs(testData.gyroZ) > 3000.0) {
-      return false;
-    }
-  } else {
-    return false;
-  }
+  if (!readRawSensorData(&testData)) return false;
+  
+  if (abs(testData.accelX) > 50.0 || abs(testData.accelY) > 50.0 || abs(testData.accelZ) > 50.0) return false;
+  if (abs(testData.gyroX) > 3000.0 || abs(testData.gyroY) > 3000.0 || abs(testData.gyroZ) > 3000.0) return false;
   
   return true;
 }
 
 float readBatteryVoltage() {
   int adcValue = analogRead(BATTERY_PIN);
-  float voltage = (adcValue / 4095.0) * 3.3;
-  voltage *= VOLTAGE_DIVIDER_RATIO;
+  float voltage = (adcValue / 4095.0) * 3.3 * VOLTAGE_DIVIDER_RATIO;
   
   static float voltageHistory[10] = {0};
   static int historyIndex = 0;
@@ -441,16 +520,10 @@ float readBatteryVoltage() {
   
   float sum = 0;
   int count = historyFull ? 10 : historyIndex;
-  for (int i = 0; i < count; i++) {
-    sum += voltageHistory[i];
-  }
+  for (int i = 0; i < count; i++) sum += voltageHistory[i];
   
   return sum / count;
 }
-
-// =================================
-// I2C 통신 함수들 (간소화)
-// =================================
 
 uint8_t readByte(uint8_t address, uint8_t subAddress) {
   uint8_t data = 0xFF;

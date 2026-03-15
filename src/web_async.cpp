@@ -1,6 +1,7 @@
 // web_async.cpp — LittleFS 정적 서빙 + WebSocket/REST (cleaned)
 
 #include "../include/web.h"
+#include "../include/config.h"
 #include <WiFi.h>
 #include <DNSServer.h>
 #include <ESPAsyncWebServer.h>
@@ -14,23 +15,17 @@
 extern bool systemArmed;
 extern float batteryVoltage;
 extern uint8_t getFlightMode();
-
-struct SensorData { float roll, pitch, yaw; float gyroX, gyroY, gyroZ; };
 extern SensorData sensorData;
-
-struct ControllerInput { float throttleNorm, rollNorm, pitchNorm, yawNorm; };
 extern ControllerInput controllerInput;
-
-struct MotorOutputs { int motor_fl, motor_fr, motor_rl, motor_rr; };
 extern MotorOutputs motorOutputs;
 
 extern void stopAllMotors();
 extern void calibrateSensors();
 extern void resetPIDIntegrals();
 
-// ===== Module internals =====
-static AsyncWebServer server(80);
-static AsyncWebSocket ws("/ws");
+// ===== Module internals (포인터로 선언 - begin()에서 초기화) =====
+static AsyncWebServer* server = nullptr;
+static AsyncWebSocket* ws = nullptr;
 static DNSServer dns;
 
 static bool g_webRcEnabled = false;
@@ -196,16 +191,21 @@ namespace web {
 
     void begin() {
         Serial.println("Initializing web server...");
+
+        // 전역 초기화 크래시 방지: begin()에서 동적 생성
+        server = new AsyncWebServer(80);
+        ws     = new AsyncWebSocket("/ws");
+
         DefaultHeaders::Instance().addHeader("Cache-Control", "no-cache");
 
         const bool fsOK = mountFS();
         if (fsOK) {
             // 정적 파일: data/ 루트 → "/"
-            server.serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
+            server->serveStatic("/", LittleFS, "/").setDefaultFile("index.html");
             listFS(); // WEB_LOG_FS 정의 시 파일 목록 출력
         } else {
             // 폴백(200 OK): 최소 페이지 제공하여 500 회피
-            server.on("/", HTTP_GET, [](AsyncWebServerRequest* r){
+            server->on("/", HTTP_GET, [](AsyncWebServerRequest* r){
             r->send(200, "text/html",
                 "<!doctype html><meta charset=utf-8>"
                 "<h3>Embedded UI</h3><p>LittleFS mount failed; serving fallback UI.</p>");
@@ -213,21 +213,21 @@ namespace web {
         }
 
         // Captive portal 호환
-        server.on("/generate_204", HTTP_ANY, [](AsyncWebServerRequest* r){ r->send(204); });
-        server.on("/gen_204",      HTTP_ANY, [](AsyncWebServerRequest* r){ r->send(204); });
+        server->on("/generate_204", HTTP_ANY, [](AsyncWebServerRequest* r){ r->send(204); });
+        server->on("/gen_204",      HTTP_ANY, [](AsyncWebServerRequest* r){ r->send(204); });
 
         // REST
-        server.on("/telemetry", HTTP_GET, handleTelemetry);
-        server.on("/command",   HTTP_POST, [](AsyncWebServerRequest*){}, nullptr, handleCommand);
+        server->on("/telemetry", HTTP_GET, handleTelemetry);
+        server->on("/command",   HTTP_POST, [](AsyncWebServerRequest*){}, nullptr, handleCommand);
 
         // WebSocket
-        ws.onEvent(wsEvent);
-        server.addHandler(&ws);
+        ws->onEvent(wsEvent);
+        server->addHandler(ws);
 
         // DNS (AP 모드에서 캡티브 포털 유도)
         dns.start(53, "*", WiFi.softAPIP());
 
-        server.begin();
+        server->begin();
         Serial.println("Web server started on port 80");
         Serial.print("AP IP: "); Serial.println(WiFi.softAPIP());
     }
@@ -246,7 +246,7 @@ namespace web {
         unsigned long now = millis();
         if (now - last >= 100) {
             last = now;
-            if (ws.count() > 0) {
+            if (ws && ws->count() > 0) {
                 JsonDocument doc;
                 doc["attitude"]["roll"]  = sensorData.roll;
                 doc["attitude"]["pitch"] = sensorData.pitch;
@@ -264,7 +264,7 @@ namespace web {
                 doc["rcEnabled"] = g_webRcEnabled;
 
                 String out; serializeJson(doc, out);
-                ws.textAll(out);
+                ws->textAll(out);
             }
         }
     }

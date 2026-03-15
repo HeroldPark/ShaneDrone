@@ -1,6 +1,6 @@
 /*
  * config.h - DIY Shane Drone 설정 파일
- * 모든 하드웨어 설정 및 상수 정의
+ * Arduino Nano ESP32 전용 - I2C 핀 설정 수정
  */
 
 #ifndef CONFIG_H
@@ -14,17 +14,33 @@
 // 하드웨어 핀 설정 (Arduino Nano ESP32)
 // =================================
 
-// I2C 핀 (MPU9250용)
-// #define SDA_PIN 21
-// #define SCL_PIN 22
-#define SDA_PIN 11
-#define SCL_PIN 12
+// ⚠️⚠️⚠️ CRITICAL: Arduino Nano ESP32 I2C 핀 설정 ⚠️⚠️⚠️
+// 
+// 테스트 결과 확인됨:
+//   - Wire.begin() 호출 시 기본 핀: GPIO11 (SDA), GPIO12 (SCL)
+//   - Wire.begin(pin1, pin2) 호출 시 핀 번호가 잘못 변환됨!
+//
+// 해결책: Wire.begin()을 인자 없이 호출 (기본 핀 사용)
+//
+// 주의: MPU9250 물리적 연결은 다음과 같이:
+//   - MPU9250 SDA → Arduino Nano ESP32의 D11 핀
+//   - MPU9250 SCL → Arduino Nano ESP32의 D12 핀
+//
+// ⚠️ D11과 D12의 실제 GPIO 번호는 11, 12입니다!
 
-// Arduino Nano ESP32의 실제 GPIO 번호 사용
-// #define SDA_PIN 38  // D11 = GPIO38
-// #define SCL_PIN 47  // D12 = GPIO47
+// I2C 초기화 방법 선택
+#define USE_DEFAULT_I2C_PINS  // Wire.begin() 사용 (인자 없음)
 
-// I2C 타임아웃 설정 추가 (부트루프 방지)
+// 디버그용 매크로
+#define I2C_PIN_DEBUG_INFO() \
+  do { \
+    Serial.println("I2C 설정: Wire.begin() - 기본 핀 사용"); \
+    Serial.println("  Arduino Nano ESP32 기본 I2C:"); \
+    Serial.println("    D11 (GPIO11) = SDA"); \
+    Serial.println("    D12 (GPIO12) = SCL"); \
+  } while(0)
+
+// I2C 타임아웃 설정
 #define I2C_TIMEOUT_MS 100
 
 // ESC PWM 핀 (4-in-1 ESC 20x20mm)

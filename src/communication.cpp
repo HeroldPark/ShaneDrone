@@ -19,8 +19,8 @@ static bool sbusLostFrame = false;
 static unsigned long lastSbusReceived = 0;
 
 // WiFi 관련 변수
-static WiFiServer telemetryServer(TELEMETRY_PORT);
-static WiFiClient telemetryClient;
+static WiFiServer* telemetryServer = nullptr;
+static WiFiClient* telemetryClient = nullptr;
 static bool wifiEnabled = false;
 
 // Walksnail Avatar HD V2 관련
@@ -98,7 +98,9 @@ bool initializeWiFi()
 		Serial.println(WiFi.softAPIP());
 
 		// 텔레메트리 서버 시작
-		telemetryServer.begin();
+		telemetryServer = new WiFiServer(TELEMETRY_PORT);
+		telemetryServer->begin();
+		telemetryClient = new WiFiClient();
 
 		return true;
 	}
@@ -397,11 +399,7 @@ bool isReceiverTimeout()
 // 메인 루프에서 주기적으로 호출 필요
 void communicationLoop()
 {
-  // 기존 루프 처리들 ...
   handleWiFiCommands();
-
-  // ✅ 시리얼 CLI 처리
-//   handleSerialCLI();
 
   // ✅ 웹 서버 요청/웹소켓 이벤트 처리 + 주기 브로드캐스트
   web::loop();
@@ -425,12 +423,12 @@ void sendTelemetryData(SensorData *sensorData, ControllerInput *input, float bat
 void sendWiFiTelemetry(SensorData *sensorData, ControllerInput *input, float batteryVoltage)
 {
 	// 새로운 클라이언트 연결 확인
-	if (!telemetryClient.connected())
+	if (telemetryClient && !telemetryClient->connected())
 	{
-		telemetryClient = telemetryServer.available();
+		if (telemetryServer) *telemetryClient = telemetryServer->available();
 	}
 
-	if (telemetryClient.connected())
+	if (telemetryClient->connected())
 	{
 		// JSON 형태로 텔레메트리 데이터 전송
 		String telemetryJson = "{";
@@ -456,7 +454,7 @@ void sendWiFiTelemetry(SensorData *sensorData, ControllerInput *input, float bat
 		telemetryJson += "\"mode\":" + String(getFlightMode());
 		telemetryJson += "}\n";
 
-		telemetryClient.print(telemetryJson);
+		telemetryClient->print(telemetryJson);
 	}
 }
 
@@ -577,15 +575,15 @@ void sendMSPGPS()
 
 void handleWiFiCommands()
 {
-	if (!wifiEnabled || !telemetryClient.connected())
+	if (!wifiEnabled || !telemetryClient->connected())
 	{
 		return;
 	}
 
 	// WiFi로부터 명령 수신 처리
-	if (telemetryClient.available())
+	if (telemetryClient->available())
 	{
-		String command = telemetryClient.readStringUntil('\n');
+		String command = telemetryClient->readStringUntil('\n');
 		command.trim();
 
 		if (command.startsWith("PID_ROLL"))
@@ -602,7 +600,7 @@ void handleWiFiCommands()
 				float kd = command.substring(thirdComma + 1).toFloat();
 
 				tuneRollPID(kp, ki, kd);
-				telemetryClient.println("Roll PID updated");
+				telemetryClient->println("Roll PID updated");
 			}
 		}
 		else if (command.startsWith("PID_PITCH"))
@@ -619,7 +617,7 @@ void handleWiFiCommands()
 				float kd = command.substring(thirdComma + 1).toFloat();
 
 				tunePitchPID(kp, ki, kd);
-				telemetryClient.println("Pitch PID updated");
+				telemetryClient->println("Pitch PID updated");
 			}
 		}
 		else if (command.startsWith("PID_YAW"))
@@ -636,21 +634,21 @@ void handleWiFiCommands()
 				float kd = command.substring(thirdComma + 1).toFloat();
 
 				tuneYawPID(kp, ki, kd);
-				telemetryClient.println("Yaw PID updated");
+				telemetryClient->println("Yaw PID updated");
 			}
 		}
 		else if (command == "CALIBRATE")
 		{
 			// 센서 캘리브레이션 명령
-			telemetryClient.println("Starting calibration...");
+			telemetryClient->println("Starting calibration...");
 			calibrateSensors();
-			telemetryClient.println("Calibration complete");
+			telemetryClient->println("Calibration complete");
 		}
 		else if (command == "RESET_PID")
 		{
 			// PID 적분항 리셋
 			resetPIDIntegrals();
-			telemetryClient.println("PID integrals reset");
+			telemetryClient->println("PID integrals reset");
 		}
 		else if (command == "STATUS")
 		{
@@ -658,7 +656,7 @@ void handleWiFiCommands()
 			String status = "ARMED:" + String(systemArmed ? "1" : "0");
 			status += ",MODE:" + String(getFlightMode());
 			status += ",BATTERY:" + String(readBatteryVoltage(), 2);
-			telemetryClient.println(status);
+			telemetryClient->println(status);
 		}
 	}
 }

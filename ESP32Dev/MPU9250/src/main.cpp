@@ -3,15 +3,19 @@
  * - 도움말 문구를 A4/A5 기준으로 정리
  * - 스캔 전 라인 상태 출력(붙잡힘 진단)
  * - 필요 시 I2C 버스 복구(9클럭 토글 + STOP)
- * - CDC(USB) 연결 대기 유지
  */
 
 #include <Arduino.h>
 #include <Wire.h>
 
-// 보드 매크로를 사용해 핀 혼동 방지 (Arduino Nano ESP32: A4=GPIO21, A5=GPIO22)
-#define SDA_PIN SDA   // = A4
-#define SCL_PIN SCL   // = A5
+// ✅ ESP32-WROOM-32E용 LED 핀 정의
+#ifndef LED_BUILTIN
+#define LED_BUILTIN 2  // ESP32-WROOM-32E 내장 LED는 GPIO2
+#endif
+
+// 보드 매크로를 사용해 핀 혼동 방지
+#define SDA_PIN 21  // ESP32 기본 SDA
+#define SCL_PIN 22  // ESP32 기본 SCL
 
 // ---- I2C 라인 상태/복구 유틸 ----
 static inline int readLineHi(int pin) {
@@ -61,7 +65,7 @@ void performI2CScan() {
   Wire.begin(SDA_PIN, SCL_PIN);
   Wire.setClock(100000);
   Wire.setTimeout(50);
-  Serial.printf("I2C 설정: SDA=%d(SDA/A4), SCL=%d(SCL/A5), 100kHz\n", SDA_PIN, SCL_PIN);
+  Serial.printf("I2C 설정: SDA=%d, SCL=%d, 100kHz\n", SDA_PIN, SCL_PIN);
 
   // 3) 주소 스캔
   int found = 0;
@@ -117,7 +121,7 @@ void performI2CScan() {
     Serial.println("❌ I2C 장치가 발견되지 않았습니다!\n");
     Serial.println("점검 체크리스트:");
     Serial.println("  1) 배선: VCC→3.3V, GND→GND");
-    Serial.println("  2) 핀  : SCL→A5(SCL), SDA→A4(SDA)");
+    Serial.println("  2) 핀  : SCL→GPIO22, SDA→GPIO21");
     Serial.println("  3) NCS : 3.3V에 연결(필수, I2C 모드 고정)");
     Serial.println("  4) AD0 : GND(주소 0x68) 또는 3.3V(0x69)");
     Serial.println("  5) 라인: 스캔 직전 '라인 상태'가 둘 다 1인지 확인");
@@ -137,50 +141,28 @@ void setup() {
   digitalWrite(LED_BUILTIN, HIGH); delay(300);
   digitalWrite(LED_BUILTIN, LOW);  delay(300);   // 1회: setup 진입
 
-  // USB CDC 시리얼
+  // 일반 UART Serial
   Serial.begin(115200);
+  
+  // ✅ ESP32-WROOM-32E는 Serial.isConnected()가 없으므로 단순 대기
+  delay(2000);  // 시리얼 모니터 연결 대기
+  
   for (int i = 0; i < 2; i++) {                  // 2회: Serial.begin 완료
     digitalWrite(LED_BUILTIN, HIGH); delay(150);
     digitalWrite(LED_BUILTIN, LOW);  delay(150);
   }
 
-  // CDC 연결 대기 (최대 15초)
-  unsigned long t0 = millis();
-  while (!Serial.isConnected() && millis() - t0 < 15000) {
-    digitalWrite(LED_BUILTIN, HIGH); delay(100);  // 빠른 깜빡임: CDC 대기
-    digitalWrite(LED_BUILTIN, LOW);  delay(100);
-  }
-  delay(50);
-
-  for (int i = 0; i < 3; i++) {                  // 3회: 준비 완료
-    digitalWrite(LED_BUILTIN, HIGH); delay(250);
-    digitalWrite(LED_BUILTIN, LOW);  delay(250);
-  }
-
-  // CDC 디버그 배너
+  // 디버그 배너
   Serial.println("\n\n=========================");
-  Serial.println("CDC 포트 디버그");
+  Serial.println("ESP32-WROOM-32E I2C 스캔");
   Serial.println("=========================");
-  Serial.printf("Serial 객체 주소: %p\n", &Serial);
-  Serial.printf("CDC 활성화: %s\n", Serial ? "YES" : "NO");
+  Serial.printf("보드: ESP32-DevKit (WROOM-32E)\n");
   Serial.printf("시간: %lu ms\n", millis());
-#ifdef ARDUINO_USB_CDC_ON_BOOT
-  Serial.println("✓ ARDUINO_USB_CDC_ON_BOOT = 1");
-#else
-  Serial.println("❌ ARDUINO_USB_CDC_ON_BOOT = 0 (문제!)");
-#endif
-#ifdef ARDUINO_USB_MODE
-  Serial.printf("✓ ARDUINO_USB_MODE = %d\n", ARDUINO_USB_MODE);
-#else
-  Serial.println("⚠️  ARDUINO_USB_MODE 미설정");
-#endif
+  Serial.printf("Free Heap: %d bytes\n", ESP.getFreeHeap());
 
   Serial.println("\nLED 신호 해석:");
   Serial.println("  1회 깜빡임 = setup() 진입");
   Serial.println("  2회 깜빡임 = Serial.begin() 완료");
-  Serial.println("  빠른 깜빡임 = CDC 대기 중");
-  Serial.println("  3회 깜빡임 = 준비 완료");
-  Serial.println("\n이 메시지가 보이면 CDC 정상!");
 
   // 초기 스캔
   performI2CScan();
@@ -219,11 +201,11 @@ void loop() {
       Serial.println("\n=== 도움말 ===");
       Serial.println("r = I2C 재스캔");
       Serial.println("h = 도움말");
-      Serial.println("\nMPU9250 배선:");
+      Serial.println("\nMPU9250 배선 (ESP32-WROOM-32E):");
       Serial.println("  VCC → 3.3V");
       Serial.println("  GND → GND");
-      Serial.println("  SCL → A5 (SCL)");
-      Serial.println("  SDA → A4 (SDA)");
+      Serial.println("  SCL → GPIO22");
+      Serial.println("  SDA → GPIO21");
       Serial.println("  NCS → 3.3V (필수!)");
       Serial.println("  AD0 → GND(주소 0x68) 또는 3.3V(0x69)");
       Serial.print("\n> ");
