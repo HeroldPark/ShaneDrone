@@ -218,3 +218,154 @@ I2C 설정: Wire.begin() - 기본 핀 사용
 ```
 	- 브레드보드 구매 : BusBoard BB830
 	- 멀티메터 구매 : UNI-T UT33D
+
+### 17. 2026-03-15
+	- 신규 업데이트 : 21. ShaneDrone 전체 코드 로직 가이드.md
+
+# 18. 2026-03-22
+
+## 권장 사항
+
+  - 특정 환경만 업로드하려면 -e 플래그로 환경을 지정하세요:
+  # DFU (RESET 2번 후)
+  pio run -e arduino_nano_esp32-dfu -t upload
+
+  # JTAG (WinUSB 드라이버 설치 후)
+  pio run -e arduino_nano_esp32-jtag -t upload
+
+  # OTA (Shane_Drone WiFi 연결 후)
+  pio run -e arduino_nano_esp32-ota -t upload
+  - 환경 미지정 시 모든 환경을 시도하므로 실패가 많아집니다.
+
+  현재 DFU로 성공했으니 펌웨어는 최신 상태입니다.
+
+====================================================================== [SUCCESS] Took 35.16 seconds ======================================================================
+Environment              Status    Duration
+-----------------------  --------  ------------
+arduino_nano_esp32-jtag  SUCCESS   00:00:35.158
+====================================================================== 1 succeeded in 00:00:35.158 ======================================================================
+
+● JTAG 업로드 성공입니다. ✅
+
+  ** Verify OK **  (4회 모두 검증 완료)
+  [SUCCESS] Took 35.16 seconds
+
+  펌웨어가 정상적으로 플래시됐습니다. JTAG은 정상 동작 중이니 앞으로 표준 업로드 방법으로 사용하면 됩니다.
+
+❯ Yaw:
+20780.6°
+이 값이 빠르게 변한다.
+
+● 시뮬레이션 모드 확정입니다.
+
+  Yaw가 20780° → 계속 증가 중 = t * 10.0 패턴 (부팅 후 약 34분 경과).
+
+  ---
+  원인 진단을 위해 시리얼 모니터가 필요합니다.
+
+  Zadig에서 드라이버를 CDC로 전환 후 부팅 로그를 봐야 정확한 원인을 알 수 있습니다.
+
+  Zadig 절차:
+  1. Zadig 실행
+  2. NanoESP32 장치 선택
+  3. 드라이버를 CDC (Serial) 로 변경 → Install
+  4. COM4 확인 후:
+  pio device monitor -p COM4 -b 115200
+  5. USB 재연결 (보드 리셋)
+
+  부팅 시 출력되는 I2C 스캔 결과를 여기에 붙여넣어 주세요. 그러면 정확히 어디서 실패하는지 알 수 있습니다.
+
+❯ 절차를 좀 더 자세히 알려줘
+
+● Zadig 드라이버 전환 절차 
+
+  ---
+  1단계: Zadig 다운로드 & 실행
+  - 구글에서 Zadig 검색 후 zadig.akeo.ie 에서 다운로드
+  - zadig-2.x.exe 실행 (설치 불필요)
+
+  ---
+  2단계: 모든 장치 표시
+  - 메뉴 Options → List All Devices 체크
+
+  ---
+  3단계: 장치 선택
+  - 드롭다운에서 USB JTAG/serial debug unit (Interface 2) 선택
+    - Interface 0 아님 → Interface 2 선택
+
+  ---
+  4단계: 드라이버 변경
+  - 왼쪽(현재): WinUSB 또는 usbser
+  - 오른쪽(변경): 화살표 클릭해서 usbser (CDC) 선택
+  - Replace Driver 클릭
+  - 완료까지 1~2분 대기
+
+  ---
+  5단계: COM 포트 확인
+  - 윈도우 장치 관리자 열기 (Win + X → 장치 관리자)
+  - 포트 (COM & LPT) 항목에 USB Serial Device (COM4) 확인
+  - COM 번호 기억
+
+  ---
+  6단계: 시리얼 모니터 연결
+  pio device monitor -p COM4 -b 115200
+  (COM 번호가 다르면 해당 번호로 변경)
+
+  ---
+  7단계: 보드 리셋
+  - USB 케이블 뽑았다가 다시 꽂기
+  - 부팅 로그가 출력되면 여기에 붙여넣기
+
+❯ 포트 (COM & LPT) 항목에 USB Serial Device (COM4) 확인 ?
+
+● Bash(powershell -Command "Get-PnpDevice -Class Ports | Select-Object Status, FriendlyName | Out-String")
+  ⎿  Status  FriendlyName
+     ------  ------------
+     OK      표준 Bluetooth에서 직렬 링크(COM5)
+     … +4 lines (ctrl+o to expand)
+
+● COM4가 아닌 COM9입니다.   
+
+  USB 직렬 장치 (COM9) 가 연결되어 있습니다. Status가 Unknown이지만 시리얼 모니터는 시도해볼 수 있습니다:
+
+  pio device monitor -p COM9 -b 115200
+
+  USB 케이블 뽑았다가 다시 꽂은 후 위 명령 실행해주세요.
+
+● 두 가지 문제 발견:
+
+  1. Arduino DFU 장치 감지 → 보드가 DFU 모드에 진입됨 (RESET 눌렸을 가능성)
+  2. USB JTAG/serial debug unit → Unknown으로 바뀜 (Zadig 변경 영향)
+  3. COM9 → Unknown 상태 (드라이버 미완료)
+
+  ---
+  순서대로 진행:
+
+  1단계: USB 재연결 (RESET 누르지 말 것)
+  - USB 케이블 뽑기 → 5초 후 다시 꽂기
+
+  2단계: 재연결 후 COM 포트 재확인
+  powershell -Command "Get-PnpDevice -Class Ports | Select-Object 	Status, FriendlyName | Out-String"
+
+  결과 붙여넣어 주세요.
+
+● COM9가 PlatformIO에도 안 보입니다. 드라이버가 제대로 설치 안 된 상태입니다.
+
+  ---
+  장치 관리자에서 수동 드라이버 설치:
+
+  1. Win + X → 장치 관리자
+  2. 포트 (COM & LPT) 펼치기
+  3. USB 직렬 장치 (COM9) 우클릭 → 드라이버 업데이트
+  4. 컴퓨터에서 드라이버 찾아보기 클릭
+  5. 컴퓨터의 장치 드라이버 목록에서 직접 선택 클릭
+  6. 목록에서 USB 직렬 장치 선택 → 다음
+
+  ---
+  설치 완료 후:
+
+  pio device list
+
+  결과 붙여넣어 주세요.
+
+# 19. 2026-03-23
